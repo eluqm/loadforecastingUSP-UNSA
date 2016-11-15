@@ -23,8 +23,8 @@ function  [error,ms]=plotPEN2(MATGEN,test,test2)
            error=sqrt(sum((fxi-test).^2)/12);
            
           %MSE (mean-squared-error) 
-           ms=mse(fxi-test);              % = sum((fxi-test).^2)/12
-           
+           %ms=mse(fxi-test);              % = sum((fxi-test).^2)/12
+           ms = sum((fxi-test).^2)/12
           
            x=[1:12]; 
            
