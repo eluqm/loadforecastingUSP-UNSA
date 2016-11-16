@@ -33,8 +33,8 @@ public class ReadMain {
 		int yearinit=1948;
 		// data caracteristic preci=1,evap=2,flow=3,min=4,max=5
 		int caract=0;
-		BufferedWriter out= new BufferedWriter(new FileWriter("/home/edson/Documents/echo_project/loadforecastingUSP-UNSA/07378500monthly.dly.txt"));
-		BufferedReader buf = new BufferedReader(new FileReader("/home/edson/Documents/echo_project/loadforecastingUSP-UNSA/07378500.dly.txt"));
+		BufferedWriter out= new BufferedWriter(new FileWriter("../source/11413000monthly.dly.txt"));
+		BufferedReader buf = new BufferedReader(new FileReader("../source/11413000.dly.txt"));
 		String line= null;
 		String[] wordsLine;
 		String[] newwordsline;

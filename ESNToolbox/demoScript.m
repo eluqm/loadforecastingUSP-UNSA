@@ -74,7 +74,7 @@ nForgetPoints = 100 ; % discard the first 100 points
 
 %%%% plot the internal states of 4 units
 nPoints = 200 ; 
-plot_states(stateMatrix,[1 2 3 4], nPoints, 1, 'traces of first 4 reservoir units') ; 
+plot_states(stateMatrix,[1 2 3 4 5 6 7 8], nPoints, 1, 'traces of first 4 reservoir units') ; 
 
 % compute the output of the trained ESN on the training and testing data,
 % discarding the first nForgetPoints of each
@@ -83,7 +83,7 @@ predictedTrainOutput = test_esn(trainInputSequence, trainedEsn, nForgetPoints);
 predictedTestOutput = test_esn(testInputSequence,  trainedEsn, nForgetPoints) ; 
 
 % create input-output plots
-nPlotPoints = 100 ; 
+nPlotPoints = 200 ; 
 plot_sequence(trainOutputSequence(nForgetPoints+1:end,:), predictedTrainOutput, nPlotPoints,...
     'training: teacher sequence (red) vs predicted sequence (blue)');
 plot_sequence(testOutputSequence(nForgetPoints+1:end,:), predictedTestOutput, nPlotPoints, ...

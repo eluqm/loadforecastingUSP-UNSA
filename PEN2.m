@@ -10,7 +10,7 @@ function [MATGEN,input3,inputstand,inputlogg,perfNN,rmse,mse,test]= PEN2(years,s
             val=val-10;
         else
         %inputs=xlsread('Datos_Pruebas.xls');
-        inputs=load('07378500monthly.dly.txt')
+        inputs=load('source/14321000monthly.dly.txt')
         end
         input=inputs(:,val);
         [input,test]=splitData(input,1);
