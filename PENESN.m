@@ -1,14 +1,6 @@
-function [MATGEN,input,inputstand,inputlogg,perfNN,rmse,mse,test]= PENESN(years,serienum,inputm1,val,hidden)
-%clear all;
-inputs=load('source/14321000monthly.dly.txt');
-
-input=inputs(:,val)
-[input,test]=splitData(input,1);
-[inputSequence,outputSequence]=normNN(input,2);
-inputSequence
-outputSequence
+function[trainedEsn,testError] = penESN(inputSequence,outputSequence,nInputUnits,nInternalUnits,nOutputUnits)
 %%%% generate an esn 
-nInputUnits = 2; nInternalUnits = 30; nOutputUnits = 1; 
+nInputUnits; nInternalUnits; nOutputUnits; 
 % 
 esn = generate_esn(nInputUnits, nInternalUnits, nOutputUnits, ...
     'spectralRadius',0.5,'inputScaling',[0.1;0.1],'inputShift',[0;0], ...
@@ -35,21 +27,22 @@ nForgetPoints = 100 ; % discard the first 100 points
     train_esn(trainInputSequence, trainOutputSequence, esn, nForgetPoints) ; 
 
 nPoints = 200 ; 
-plot_states(stateMatrix,[1 2 3 4 5 6 7 8], nPoints, 1, 'traces of first 4 reservoir units') ;
+plot_states(stateMatrix,[1 2 3 4 5 6 7 8 9 10 11 12], nPoints, 1, 'traces of first 4 reservoir units') ;
 
 % compute the output of the trained ESN on the training and testing data,
 % discarding the first nForgetPoints of each
 nForgetPoints = 0 ;
 %predictedTestOutput = test_esn(testInputSequence,  trainedEsn, nForgetPoints) ;
 % create input-output plots
-nPlotPoints = 100 ;
+%nPlotPoints = 100 ;
 %plot_sequence(testOutputSequence(nForgetPoints+1:end,:), predictedTestOutput, nPlotPoints, ...
   %  'testing: teacher sequence (red) vs predicted sequence (blue)') ; 
 predictedTestOutput = test_esn(testInputSequence,  trainedEsn, nForgetPoints) ; 
 
-predicTest=test_esn([1.06 2.27],  trainedEsn, nForgetPoints)
-predicTest1=test_esn([1.06 2.27],  trainedEsn, nForgetPoints)
-predicTest2=test_esn([1.06 2.27],  trainedEsn, nForgetPoints)
+%predicTest=test_esn([1.06 2.27],  trainedEsn, nForgetPoints)
+%predicTest1=test_esn([1.06 2.27],  trainedEsn, nForgetPoints)
+%predicTest2=test_esn([1.06 2.27],  trainedEsn, nForgetPoints)
 %%%%compute NRMSE testing error
 testError = compute_NRMSE(predictedTestOutput, testOutputSequence); 
 disp(sprintf('test NRMSE = %s', num2str(testError)))
+end
