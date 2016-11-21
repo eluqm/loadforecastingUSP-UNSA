@@ -1,58 +1,88 @@
 function [MATGEN,input,inputstand,inputlogg,perfNN,rmse,mse,test]= PEN2ESN(years,serienum,inputm1,val,hidden)
 %clear all;
+%inputm1 => the model ESN2 generates the inflow ( or evap , prec)
+        %of the present month utilizing inflows of two previous months, in
+        %this case for example to 1 year of prediction the model input are [(X-2)nov,(X-1)dic]=> [(Y)ene] 
+        %values
+        % 
+%load mopex data 
 inputs=load('source/14321000monthly.dly.txt');
 
 input=inputs(:,val)
+%splitData(input,year_prediction)
 [input,test]=splitData(input,1);
-[inputSequence,outputSequence]=normNN(input,2);
-inputSequence
-outputSequence
-%%%% generate an esn 
-nInputUnits = 2; nInternalUnits = 50; nOutputUnits = 1; 
-% 
-[esn,testerror] = penESN(inputSequence,outputSequence,nInputUnits,nInternalUnits,nOutputUnits) 
-%generate_esn(nInputUnits, nInternalUnits, nOutputUnits, ...
-%    'spectralRadius',0.5,'inputScaling',[0.1;0.1],'inputShift',[0;0], ...
-%    'teacherScaling',[0.3],'teacherShift',[-0.2],'feedbackScaling', 0, ...
-%    'type', 'plain_esn'); 
+
+inputSequence=0
+outputSequence=0
+MATGEN=0;
+inputstand=0;
+        % A transformation is required if a time series is not normally distributed
+        % It aims to remove the seasonality from the mean and the variance,
+        % if skewness coefficients are biased. Therefore, a transformation to reduce this skewness closer to zero was needed.
+        % The skewness of the observed data is reduced using log-transformation
+        inputm1(1,2)=translogone(input,inputm1(1,2),12);
+        inputm1(1,1)=translogone(input,inputm1(1,1),11);
+        %inputm1()
+        
+        %log-transformation and standarization of data 
+        [inputstand,xlog1]=translog(input);
+        
+        % A step before training the neural networkk, 
+        % it is often useful to scale the inputs and targets so that they always fall within a specified range. 
+        % in this project, the data were scaled in the range of [-1, +1] using the equation:
+        inputlogg=xlog1;
+        [yi,PS]=mapminmax(inputstand');
+        datainputstart=mapminmax('apply',inputm1,PS);
+        
+        %neural network based architectures are prepared; 
+        % the model (ANN2) generates the inflow of the present month utilizing inflows of two previous months.
+        %[i,t]=normNN(yi',2);
+        [inputSequence,outputSequence]=normNN(yi',2);
+        %train neural network
+        %[net,perfNN]=penNN(i,t,hidden);
+        %%%% generate an esn 
+        nForgetPoints = 0 ;
+        nPlotPoints = 100 ; 
+        nInputUnits = 2; nInternalUnits = 30; nOutputUnits = 1; 
+        % 
+        [net,perfNN] = penESN(inputSequence,outputSequence,nInputUnits,nInternalUnits,nOutputUnits) 
+        %generacion de datos estocasticos por mes 
+        % synthetic values produced by the model based on serienum
+        for ser=1:serienum
+            for y=1:years                          
+                for m=1:12
+                   %Rvt= tomasandfiering(val,m)
+                   mi=m;
+                   if m==1 
+                        mi=13;
+                   end
+                   if m==2
+                       mi=14;
+                   end
+                   Rvt=tomasandfiering2(val,input,mi);%componente aleatorio 
+                  %Yvt=sim(net,i(size(i,1)-12+m,1));
+                  %simESN(esn,[1.06 2.27])
+                   Yvt=simESN(net,datainputstart);%OJO .... !!!
+                   %de-scaled valor de la red
+                   Yvtn=mapminmax('reverse',Yvt,PS);
+                   
+                   Rvtn=detranslogone(inputstand,xlog1,input,Rvt+Yvtn,m);
+                    Rvtn=abs(Rvtn);
+                   MATGEN(m,ser,y)=Rvtn;
+                   %datainputstart=mapminmax('apply',Yvtn,PS);
+                   Rvtn2=translogone(input,Rvtn,m);
+                   Rvtn3=mapminmax('apply',Rvtn2,PS);
+                   datainputstart=[datainputstart(1,2) Rvtn3];
+                end
+            
+            
+            end
+            datainputstart=mapminmax('apply',inputm1,PS);
+        end
+
+        input3=input;
+       [rmse,mse]=plotPEN(MATGEN,test);
 
 
-%esn.internalWeights = esn.spectralRadius * esn.internalWeights_UnitSR;
 
-
-%%%% split the data into train and test
-
-%train_fraction = 0.7 ; % use 50% in training and 50% in testing
-%[trainInputSequence, testInputSequence] = ...
-%    split_train_test(inputSequence,train_fraction);
-%size(trainInputSequence)
-%size(testInputSequence)
-%[trainOutputSequence,testOutputSequence] = ...
-%    split_train_test(outputSequence,train_fraction);
-%size(testOutputSequence)
-%%%% train the ESN
-%nForgetPoints = 100 ; % discard the first 100 points
-%[trainedEsn stateMatrix] = ...
-%    train_esn(trainInputSequence, trainOutputSequence, esn, nForgetPoints) ; 
-
-%nPoints = 200 ; 
-%plot_states(stateMatrix,[1 2 3 4 5 6 7 8 9 10 11 12], nPoints, 1, 'traces of first 4 reservoir units') ;
-
-% compute the output of the trained ESN on the training and testing data,
-% discarding the first nForgetPoints of each
-nForgetPoints = 0 ;
-%predictedTestOutput = test_esn(testInputSequence,  trainedEsn, nForgetPoints) ;
-% create input-output plots
-nPlotPoints = 100 ;
-%plot_sequence(testOutputSequence(nForgetPoints+1:end,:), predictedTestOutput, nPlotPoints, ...
-  %  'testing: teacher sequence (red) vs predicted sequence (blue)') ; 
-%predictedTestOutput = test_esn(testInputSequence,  trainedEsn, nForgetPoints) ; 
-
-%predicTest=test_esn([1.06 2.27],  trainedEsn, nForgetPoints)
-%predicTest1=test_esn([1.06 2.27],  trainedEsn, nForgetPoints)
-%predicTest2=test_esn([1.06 2.27],  trainedEsn, nForgetPoints)
-%%%%compute NRMSE testing error
-%testError = compute_NRMSE(predictedTestOutput, testOutputSequence); 
-%disp(sprintf('test NRMSE = %s', num2str(testError)))
-simESN(esn,[1.06 2.27])
 end
