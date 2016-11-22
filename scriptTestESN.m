@@ -4,7 +4,8 @@ inputs=load('source/14321000monthly.dly.txt');
 
 input=inputs(:,3)
 %splitData(input,year_prediction)
-[input,test]=splitData(input,1);
+years=2
+[input,test]=splitData(input,years);
 
 inputSequence=0
 outputSequence=0
@@ -31,31 +32,43 @@ inputstand=0;
         %neural network based architectures are prepared; 
         % the model (ANN2) generates the inflow of the present month utilizing inflows of two previous months.
         %[i,t]=normNN(yi',2);
-        [inputSequence,outputSequence]=normNN(xlog1,2);
+        [inputSequence,outputSequence]=normNN(input,2);%short time delay memory = 2 
         %train neural network
         %[net,perfNN]=penNN(i,t,hidden);
         %%%% generate an esn 
-        nForgetPoints = 0 ;
-        nPlotPoints = 100 ; 
-        nInputUnits = 2; nInternalUnits = 30; nOutputUnits = 1; 
+        nForgetPoints = 36 ;
+        nPlotPoints = 12 ; 
+        nInputUnits = 2; nInternalUnits = 40; nOutputUnits = 1; 
         % 
         [net,perfNN] = penESN(inputSequence,outputSequence,nInputUnits,nInternalUnits,nOutputUnits)
         %test_esn([-0.48 -0.49],  net, nForgetPoints) 
-       % test_esn([1.06 2.27],net, nForgetPoints)
-        
-        %test input
-        inputlasttwo =inputm1
-        predictserie=0;
-        for m=1:12
-            Yvtn=test_esn(inputlasttwo,net,nForgetPoints)
-            Rvtn=detranslogone(inputstand,xlog1,input,Yvtn,m);
-            Rvtn=abs(Rvtn);
-            
-            predictserie(m,1)=Rvtn;
-            Rvtn2=translogone(input,Rvtn,m);
-            inputlasttwo=[inputlasttwo(1,2) Rvtn2];
-            
+        inputSequencetest=inputSequence(size(inputSequence,1)-59:size(inputSequence,1),:);
+        outputSequencePredicted=test_esn(inputSequencetest,net, nForgetPoints);
+       %v!!!!!!! ojo !!! delay 2 ??? 
+        for i=1:3
+        outputSequencePredicted=[outputSequencePredicted(size(outputSequencePredicted,1),1);outputSequencePredicted]
+        outputSequencePredicted(size(outputSequencePredicted,1),:)=[]
         end
+        testlog=logTransformation(test,input);
+        
+       % rawData=inverseLogTransformation(outputSequencePredicted,input)
+      %  outputSequencePredicted=detranslog(inputstand,xlog1,outputSequencePredicted);
+        %test input
+     %   inputlasttwo =inputm1
+     %   predictserie=0;
+       % for m=0:(12*years)-1
+      %      Yvtn=test_esn(inputlasttwo,net,nForgetPoints)
+       %    outputSequencePredicted(mod(m,12)+1,1)=detranslogone(inputstand,xlog1,input,outputSequencePredicted(mod(m,12)+1,1),mod(m,12)+1);
+           
+           % Rvtn=abs(Rvtn);
+      %      predictserie(m,1)=Yvtn
+      %      inputlasttwo=[inputlasttwo(1,2) Yvtn]
+           % predictserie(m,1)=Rvtn;
+          %  Rvtn2=translogone(input,Rvtn,m);
+          %  inputlasttwo=[inputlasttwo(1,2) Rvtn2];
+            
+      %  end
+        
         
 
 %%%%compute NRMSE training error
@@ -63,7 +76,12 @@ inputstand=0;
 %disp(sprintf('train NRMSE = %s', num2str(trainError)))
 
 %%%%compute NRMSE testing error
-%testError = compute_NRMSE(predictedTestOutput, testOutputSequence); 
-%disp(sprintf('test NRMSE = %s', num2str(testError)))
-        
+testError = compute_NRMSE(outputSequencePredicted, test); 
+disp(sprintf('test NRMSE = %s', num2str(testError)))
+%plot_sequence(test(nForgetPoints+1:end,:), outputSequencePredicted, nPlotPoints, ...
+ %   'testing: teacher sequence (red) vs predicted sequence (blue)') ;
+% testlog=inverseLogTransformation(testlog,input);
+% outputSequencePredicted=inverseLogTransformation(outputSequencePredicted,input);
+ plot([1:12*years],outputSequencePredicted,'-ro',[1:12*years],test,'-bd')
+        hleg2= legend('media','real');
         
