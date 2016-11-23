@@ -1,8 +1,8 @@
 clear all; 
 
-inputs=load('source/14321000monthly.dly.txt');
-
-input=inputs(:,3)
+inputs=load('source/11413000monthly.dly.txt');
+%inputs=xlsread('source/Datos_Pruebas.xls');
+input=inputs(:,1)
 %splitData(input,year_prediction)
 years=2
 [input,test]=splitData(input,years);
@@ -38,7 +38,7 @@ inputstand=0;
         %%%% generate an esn 
         nForgetPoints = 36 ;
         nPlotPoints = 12 ; 
-        nInputUnits = 2; nInternalUnits = 40; nOutputUnits = 1; 
+        nInputUnits = 2; nInternalUnits = 30; nOutputUnits = 1; 
         % 
         [net,perfNN] = penESN(inputSequence,outputSequence,nInputUnits,nInternalUnits,nOutputUnits)
         %test_esn([-0.48 -0.49],  net, nForgetPoints) 
@@ -50,7 +50,7 @@ inputstand=0;
         outputSequencePredicted(size(outputSequencePredicted,1),:)=[]
         end
         testlog=logTransformation(test,input);
-        
+        % outputSequencePredicted=abs( outputSequencePredicted);
        % rawData=inverseLogTransformation(outputSequencePredicted,input)
       %  outputSequencePredicted=detranslog(inputstand,xlog1,outputSequencePredicted);
         %test input
@@ -82,6 +82,43 @@ disp(sprintf('test NRMSE = %s', num2str(testError)))
  %   'testing: teacher sequence (red) vs predicted sequence (blue)') ;
 % testlog=inverseLogTransformation(testlog,input);
 % outputSequencePredicted=inverseLogTransformation(outputSequencePredicted,input);
- plot([1:12*years],outputSequencePredicted,'-ro',[1:12*years],test,'-bd')
+figure(4) 
+plot([1:12*years],outputSequencePredicted,'-ro',[1:12*years],test,'-bd')
         hleg2= legend('media','real');
+        
+numofseries=100
+count=1;
+for ser=1:numofseries
+            for y=1:years                          
+                for m=1:12
+                   %Rvt= tomasandfiering(val,m)
+                   mi=m;
+                   if m==1 
+                        mi=13;
+                   end
+                   if m==2
+                       mi=14;
+                   end
+                   Rvt=tomasandfiering2(-1,input,mi);%componente aleatorio 
+                  %Yvt=sim(net,i(size(i,1)-12+m,1));
+                  % Yvt=sim(net,datainputstart');%OJO .... !!!
+                   %de-scaled valor de la red
+                   %Yvtn=mapminmax('reverse',Yvt,PS);
+                   
+                   Rvtn=detranslogone(inputstand,xlog1,input,Rvt,m);
+                    Rvtn=abs(Rvtn+outputSequencePredicted(mod(m,12*years+1)));
+                   MATGEN(m,ser,y)=Rvtn;
+                   %datainputstart=mapminmax('apply',Yvtn,PS);
+                   %Rvtn2=translogone(input,Rvtn,m);
+                   %Rvtn3=mapminmax('apply',Rvtn2,PS);
+                  % datainputstart=[datainputstart(1,2) Rvtn3];
+                   count=count+1;
+                end
+            
+            
+            end
+           % datainputstart=mapminmax('apply',inputm1,PS);
+end
+         [rmse,mse]=plotPEN(MATGEN,test);
+
         
