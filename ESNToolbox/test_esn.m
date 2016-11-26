@@ -29,9 +29,9 @@ if esn.trained == 0
 end
 
 if nargin == 3 % case where no starting state is specified 
-    stateCollection = compute_statematrix(inputSequence, [], esn, nForgetPoints) ;  
-    disp('estoy con 3 args ............');
-    disp(size(inputSequence))
+    stateCollection = compute_statematrix( inputSequence,[], esn, nForgetPoints) ;  
+   % disp('estoy con 3 args ............');
+   % disp(size(inputSequence))
 else % case where the last (fourth and fifth) input argument gives a starting vector
     args = varargin; 
     nargs= length(args);

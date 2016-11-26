@@ -156,8 +156,10 @@ end
 
 %%%% error checking
 % check that inputScaling has correct format
+disp(fprintf('input scaling size %d , input units %d',size(esn.inputScaling,1),esn.nInputUnits))
+disp(fprintf('%s',esn.inputScaling))
 if size(esn.inputScaling,1) ~= esn.nInputUnits
-    error('the size of the inputScaling does not match the number of input units'); 
+    error('the size of the inputScaling does not match the number of input units 1'); 
 end
 if size(esn.inputShift,1) ~= esn.nInputUnits
     error('the size of the inputScaling does not match the number of input units'); 

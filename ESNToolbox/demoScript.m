@@ -16,7 +16,7 @@ sequenceLength = 1000;
 disp('Generating data ............');
 disp(sprintf('Sequence Length %g', sequenceLength ));
 
-systemOrder = 3 ; % set the order of the NARMA equation
+systemOrder =4 ; % set the order of the NARMA equation
 [inputSequence outputSequence] = generate_NARMA_sequence(sequenceLength , systemOrder) ; 
 
 

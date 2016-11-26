@@ -9,7 +9,7 @@ function [MATGEN,input3,inputstand,inputlogg,perfNN,rmse,mse,test]= PEN2(years,s
             inputs=xlsread('E:\PEN\evaporacionpreaguada.xls');
             val=val-10;
         else
-        %inputs=xlsread('Datos_Pruebas.xls');
+        %inputs=xlsread('source/Datos_Pruebas.xls');
         inputs=load('source/14321000monthly.dly.txt')
         end
         input=inputs(:,val);

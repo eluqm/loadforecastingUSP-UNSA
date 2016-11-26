@@ -1,25 +1,20 @@
-% A minimalistic Echo State Networks demo with Mackey-Glass (delay 17) data 
-% in "plain" Matlab.
-% by Mantas Lukosevicius 2012
-% http://minds.jacobs-university.de/mantas
+function [Y, resSize,mse , x,Win,Wout,W,a,outSize] = ESN( resSize , yearsprediction,data)
+%ESN Summary of this function goes here
+%   Detailed explanation goes here
 
 % load the data
-trainLen = 623;
-testLen = 12;
-initLen = 30;
+testLen = 24*yearsprediction;
+trainLen = size(data,1)-(testLen+1);
+initLen = 11;
 
-%data = load('MackeyGlass_t17.txt');
-data = load('/source/11413000monthly.dly.txt');
-data=data(:,1);
-% plot some of it
+%plot some of it
 figure(10);
 plot(data(1:60));
 title('A sample of data');
 
 % generate the ESN reservoir
 inSize = 1; outSize = 1;
-resSize = 15;
-a = 0.3; % leaking rate
+a = 0.5; % leaking rate
 
 rand( 'seed', 42 );
 Win = (rand(resSize,1+inSize)-0.5) .* 1;
@@ -65,11 +60,11 @@ for t = 1:testLen
 	% generative mode:
 	%u = y;
 	% this would be a predictive mode:
-	%u = data(trainLen+t+1);
+	u = data(trainLen+t+1);
 end
 
-errorLen = 10;
-mse = sum((data(trainLen+2:trainLen+errorLen+1)'-Y(1,1:errorLen)).^2)./errorLen;
+errorLen = (12*yearsprediction)-1;
+mse = sum((data(trainLen+1:trainLen+errorLen+1)'-Y(1,1:errorLen+1)).^2)./errorLen;
 disp( ['MSE = ', num2str( mse )] );
 
 % plot some signals
@@ -81,7 +76,7 @@ hold off;
 axis tight;
 title('Target and generated signals y(n) starting at n=0');
 legend('Target signal', 'Free-running predicted signal');
-test=data(trainLen+2:trainLen+testLen+1)
+%test=data(trainLen+2:trainLen+testLen+1)
 %figure(2);
 %plot( X(1:20,1:200)' );
 %title('Some reservoir activations x(n)');
@@ -89,4 +84,6 @@ test=data(trainLen+2:trainLen+testLen+1)
 %figure(3);
 %bar( Wout' )
 %title('Output weights W^{out}');
+
+end
 
