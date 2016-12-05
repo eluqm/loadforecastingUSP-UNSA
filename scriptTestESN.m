@@ -1,9 +1,9 @@
 clear all; 
 
-inputs=load('source/11413000monthly.dly.txt');
+inputs=load('source/03054500TygartMonthly.dly.txt');
 %inputs=xlsread('source/Datos_Pruebas.xls');
-input=inputs(:,1);
-data=inputs(:,1); %historical data
+input=inputs(:,3);
+data=inputs(:,3); %historical data
 years=2;
 [inputstandstart,xlog1start]=translog(input);
 [input,test]=splitData(input,years);
@@ -28,7 +28,7 @@ MATGEN=0;
         [inputSequence,outputSequence]=normNN(scaledinput',1);%short time delay memory = 2 , without  bias
         inputSequence= [ones(size(inputSequence,1),1) inputSequence];
         %%%% generate an esn 
-        nForgetPoints = 11 ;
+        nForgetPoints = 12 ;
         
         nInputUnits = 2; nInternalUnits = 30; nOutputUnits = 1; 
         %creating and training ESN
@@ -102,7 +102,8 @@ MATGEN=0;
 %         predicted=test_esn(predictinputSequence, net, nForgetPoints);
 %         predicted=  mapminmax('reverse',predicted',PS);
 %         predicted=predicted';
- numofseries=100;
+net=load_esn('ESN03054500TygartMonthD')
+ numofseries=200;
  count=1;
  MATGEN3=[];
 % %t_nn=t_n
@@ -131,7 +132,7 @@ MATGEN=0;
 %                   %  Rvtn=abs(Rvtn/2-predicted(mod(m,12*years+1)));
 %               %    Rvtn1=abs(Yvtn+Rvt);
                  %   MATGEN(m,ser,y)=predicted(m+12*(y-1),1);
-                    MATGEN2(m,ser,y)=abs(Rvtn);
+                    MATGEN2(m,ser,y)=Rvtn;
 %                %    t_n(1,:)=[];
                     inputNetworkESN(count,1)=abs(Rvtn);
 %                %    y_n=mapminmax('apply',Yvtn,PS);
@@ -153,7 +154,11 @@ MATGEN=0;
 %                 predicted=[zeros(nForgetPoints,1);predicted'];
                 predicted= test_esn(inputNoiseNetwork, net, nForgetPoints);
                 predictedde=mapminmax('reverse',predicted,PS);
-                MATGEN3=[MATGEN3 predictedde(:,1)];
+              %  if size(predictedde(predictedde<0),1) == 0
+                MATGEN3=[MATGEN3 abs(predictedde(:,1))];
+            %    else
+                    
+                
 %                predicted
 %            %    MATGEN(:,ser,y)=predicted(:,1);
 %              %   predicted=[zeros(nForgetPoints,1);predicted];
@@ -163,15 +168,30 @@ MATGEN=0;
 %          %  t_n=t_nn;
 %            % datainputstart=mapminmax('apply',inputm1,PS);
  end
-          [rmse,mse]=plotPEN(MATGEN2,test,'tomas and fiering');
+          [rmse,mse]=plotPEN(MATGEN2,test,'Tomas and Fiering');
           MATGEN4=[];
+          MATGEN5=[];
             for n=1:years
                 MATGEN4(:,:,n)=MATGEN3((n-1)*12+1:12*n,:);
+                MATGEN5=[MATGEN5 ; MATGEN2(:,:,n)];
             end
-            [rmse,mse]=plotPEN(MATGEN4,test,'ESN and aleatorio');
+            [rmse,mse]=plotPEN(MATGEN4,test,'ESN');
          % figure(10)      
         %    plot(MATGEN3)
         %    hleg2= legend('tomasfiering');
          
 %   %      plot(MATGEN(:,:,1))
-%         
+%        
+figure('Name','boxplotESN')
+
+boxplot(MATGEN3','Notch','on')
+hold on 
+plot(test,'-bd','LineWidth',0.5)
+hold off
+
+figure('Name','boxplotTomasFiering')
+
+boxplot(MATGEN5','Notch','on')
+hold on 
+plot(test,'-bd','LineWidth',0.5)
+hold off

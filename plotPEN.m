@@ -44,8 +44,8 @@ function  [error,ms]=plotPEN(MATGEN,test,name)
               for n=1:size(MATGEN,3) 
                 plotData2=[plotData2;MATGEN(:,seri,n)];
               end
-                plot(x,plotData2,'-k');
-                hleg1=legend('escenarios');
+                plot(x,plotData2,':k');
+                hleg1=legend('syntetics series');
                 hold on;
                 plotData2=[];
            end
@@ -55,7 +55,7 @@ function  [error,ms]=plotPEN(MATGEN,test,name)
             
             figure('Name',strcat(name,' respect medias'))      
             plot(x,fxi,'-ro',x,test,'-bd')
-            hleg2= legend('media','real');
+            hleg2= legend('mean of syntetics series','actual serie');
         
          end
          %%%%compute NRMSE training error
