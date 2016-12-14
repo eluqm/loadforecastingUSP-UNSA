@@ -1,9 +1,9 @@
 function[trainedEsn,testError] = penESN(inputSequence,outputSequence,nInputUnits,nInternalUnits,nOutputUnits)
 %%%% generate an esn 
-nInputUnits; nInternalUnits; nOutputUnits; 
+
 % 
 esn = generate_esn(nInputUnits, nInternalUnits, nOutputUnits, ...
-    'spectralRadius',0.5,'inputScaling',[0.1;0.1],'inputShift',[0;0], ...
+    'spectralRadius',0.6, 'inputScaling',[0.1;0.1],...
     'teacherScaling',[0.3],'teacherShift',[-0.2],'feedbackScaling', 0, ...
     'type', 'plain_esn'); 
 
@@ -13,7 +13,7 @@ esn.internalWeights = esn.spectralRadius * esn.internalWeights_UnitSR;
 
 %%%% split the data into train and test
 
-train_fraction = 0.8 ; % use 50% in training and 50% in testing
+train_fraction = 0.6 ; % use 50% in training and 50% in testing
 [trainInputSequence, testInputSequence] = ...
     split_train_test(inputSequence,train_fraction);
 %size(trainInputSequence)
@@ -23,32 +23,33 @@ train_fraction = 0.8 ; % use 50% in training and 50% in testing
 %size(testOutputSequence)
 %%%% train the ESN
 nForgetPoints = 100 ; % discard the first 100 points
-[trainedEsn stateMatrix] = ...
+[trainedEsn, stateMatrix] = ...
     train_esn(trainInputSequence, trainOutputSequence, esn, nForgetPoints) ; 
 
-nPoints = 40 ; 
+%nPoints = 40 ; 
 %plot_states(stateMatrix,[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18], nPoints, 1, 'traces of first 4 reservoir units') ;
 
 % compute the output of the trained ESN on the training and testing data,
 % discarding the first nForgetPoints of each
-nForgetPoints = 12 ;
+nForgetPoints = 20 ;
 %predictedTestOutput = test_esn(testInputSequence,  trainedEsn, nForgetPoints) ;
 % create input-output plots
 %nPlotPoints = 100 ;
 %plot_sequence(testOutputSequence(nForgetPoints+1:end,:), predictedTestOutput, nPlotPoints, ...
   %  'testing: teacher sequence (red) vs predicted sequence (blue)') ; 
-%predictedTestOutput = test_esn(testInputSequence,  trainedEsn, nForgetPoints) ; 
+predictedTestOutput = test_esn(testInputSequence,  trainedEsn, nForgetPoints) ; 
 
 predictedTrainOutput = test_esn(trainInputSequence, trainedEsn, nForgetPoints);
-for n=1:12
-    predictedTestOutput = test_esn(testInputSequence,  trainedEsn, nForgetPoints) ; 
-end
+%for n=1:12
+%    predictedTestOutput = test_esn(testInputSequence,  trainedEsn, nForgetPoints) ; 
+%end
 % create input-output plots
-nPlotPoints = 24 ; 
-%plot_sequence(trainOutputSequence(nForgetPoints+1:end,:), predictedTrainOutput, nPlotPoints,...
-%    'training: teacher sequence (red) vs predicted sequence (blue)');
-%plot_sequence(testOutputSequence(nForgetPoints+1:end,:), predictedTestOutput, nPlotPoints, ...
-%    'testing: teacher sequence (red) vs predicted sequence (blue)') ; 
+nPlotPointstrain=size(predictedTrainOutput,1);
+nPlotPointstest=size(predictedTestOutput,1);
+plot_sequence(trainOutputSequence(nForgetPoints+1:end,:), predictedTrainOutput, nPlotPointstrain,...
+    'training: teacher sequence (red) vs predicted sequence (blue)');
+plot_sequence(testOutputSequence(nForgetPoints+1:end,:), predictedTestOutput, nPlotPointstest, ...
+    'testing: teacher sequence (red) vs predicted sequence (blue)') ; 
 
 
 %predicTest=test_esn([1.06 2.27],  trainedEsn, nForgetPoints)
@@ -56,5 +57,5 @@ nPlotPoints = 24 ;
 %predicTest2=test_esn([1.06 2.27],  trainedEsn, nForgetPoints)
 %%%%compute NRMSE testing error
 testError = compute_NRMSE(predictedTestOutput, testOutputSequence); 
-disp(sprintf('test NRMSE = %s', num2str(testError)))
+disp(fprintf('test NRMSE = %s', num2str(testError)))
 end

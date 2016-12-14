@@ -61,5 +61,22 @@ function  [error,ms]=plotPEN(MATGEN,test,name)
          %%%%compute NRMSE training error
         Error = compute_NRMSE(fxi, test); 
         disp(sprintf(' NRMSE = %s de %s', num2str(Error),name))
+        %MPE error
+        summ= 0 ;
+        for i=1:size(fxi,1)
+            summ= summ + abs(fxi(i,1)-test(i,1))/test(i,1); 
+        end
+        %summ = sum((fxi - test))/test;
+        ErrorMPE = summ*(100/size(fxi,1));
+        disp(sprintf(' MPE = %s de %s', num2str(ErrorMPE),name))
+        
+        %MAD error
+        summ1= 0 ;
+        for i=1:size(fxi,1)
+            summ1= summ1 + abs(fxi(i,1)-test(i,1)); 
+        end
+        %summ = sum((fxi - test))/test;
+        ErrorMAD = summ1*(1/size(fxi,1));
+        disp(sprintf(' MAD = %s de %s', num2str(ErrorMAD),name))
 
 end

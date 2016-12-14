@@ -1,6 +1,6 @@
 clear all; 
 
-inputs=load('source/03054500TygartMonthly.dly.txt');
+inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=xlsread('source/Datos_Pruebas.xls');
 input=inputs(:,3);
 data=inputs(:,3); %historical data
@@ -102,7 +102,7 @@ MATGEN=0;
 %         predicted=test_esn(predictinputSequence, net, nForgetPoints);
 %         predicted=  mapminmax('reverse',predicted',PS);
 %         predicted=predicted';
-net=load_esn('ESN03054500TygartMonthD')
+net=load_esn('ESN03364000EastForkWhiteMonthD')
  numofseries=200;
  count=1;
  MATGEN3=[];
