@@ -16,7 +16,8 @@ reservoirNumber=80; %max value
 spectral_radious=0.9; %max value
 nForgetPoints = 11 ; %value
         
-nInputUnits = 2; nInternalUnits = 30; nOutputUnits = 1; 
+nInputUnits = 2; %nInternalUnits = 30; 
+nOutputUnits = 1; 
 bestFinal=struct('error',00.1,'networkESN',struct);        
 configuration=struct('error',00.1,'net',struct); 
 

@@ -11,7 +11,7 @@ clear all;
 
 %%%% generate the training data
 
-sequenceLength = 1000;
+sequenceLength = 200;
 
 disp('Generating data ............');
 disp(sprintf('Sequence Length %g', sequenceLength ));
@@ -31,13 +31,13 @@ train_fraction = 0.5 ; % use 50% in training and 50% in testing
 
 
 %%%% generate an esn 
-nInputUnits = 2; nInternalUnits = 30; nOutputUnits = 1; 
+nInputUnits = 2; nInternalUnits = 15; nOutputUnits = 1; 
 % 
 esn = generate_esn(nInputUnits, nInternalUnits, nOutputUnits, ...
-    'spectralRadius',0.5,'inputScaling',[0.1;0.1],'inputShift',[0;0], ...
+    'spectralRadius',0.4,'inputScaling',[0.1;0.1],'inputShift',[0;0], ...
     'teacherScaling',[0.3],'teacherShift',[-0.2],'feedbackScaling', 0, ...
-    'type', 'plain_esn'); 
-
+    'type', 'leaky_esn','leakage',1); 
+%leaky_esn','leakage',1
 %%% VARIANTS YOU MAY WISH TO TRY OUT
 % (Comment out the above "esn = ...", comment in one of the variants
 % below)
@@ -65,7 +65,7 @@ esn = generate_esn(nInputUnits, nInternalUnits, nOutputUnits, ...
 esn.internalWeights = esn.spectralRadius * esn.internalWeights_UnitSR;
 
 %%%% train the ESN
-nForgetPoints = 100 ; % discard the first 100 points
+nForgetPoints = 4 ; % discard the first 100 points
 [trainedEsn stateMatrix] = ...
     train_esn(trainInputSequence, trainOutputSequence, esn, nForgetPoints) ; 
 
@@ -73,17 +73,17 @@ nForgetPoints = 100 ; % discard the first 100 points
 % save_esn(trainedEsn, 'esn_narma_demo_1'); 
 
 %%%% plot the internal states of 4 units
-nPoints = 200 ; 
-plot_states(stateMatrix,[1 2 3 4 5 6 7 8], nPoints, 1, 'traces of first 4 reservoir units') ; 
+nPoints = 4 ; 
+plot_states(stateMatrix,[1 2 3 4], nPoints, 1, 'traces of first 4 reservoir units') ; 
 
 % compute the output of the trained ESN on the training and testing data,
 % discarding the first nForgetPoints of each
-nForgetPoints = 100 ; 
+nForgetPoints = 4 ; 
 predictedTrainOutput = test_esn(trainInputSequence, trainedEsn, nForgetPoints);
 predictedTestOutput = test_esn(testInputSequence,  trainedEsn, nForgetPoints) ; 
 
 % create input-output plots
-nPlotPoints = 200 ; 
+nPlotPoints = size(trainOutputSequence,1)-nForgetPoints; 
 plot_sequence(trainOutputSequence(nForgetPoints+1:end,:), predictedTrainOutput, nPlotPoints,...
     'training: teacher sequence (red) vs predicted sequence (blue)');
 plot_sequence(testOutputSequence(nForgetPoints+1:end,:), predictedTestOutput, nPlotPoints, ...
