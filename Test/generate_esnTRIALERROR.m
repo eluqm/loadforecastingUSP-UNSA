@@ -6,7 +6,8 @@ function[trainedEsn,testError]=generate_esnTRIALERROR(inputSequence,outputSequen
 esn = generate_esn(nInputUnits, nInternalUnits, nOutputUnits, ...
     'spectralRadius',spectral_radious, 'inputScaling',[0.1;0.1],...
     'teacherScaling',[0.3],'teacherShift',[-0.2],'feedbackScaling', 0, ...
-    'type', 'plain_esn'); 
+    'type', 'leaky_esn','leakage',1,'methodWeightCompute','ridge_regression');
+% 'plain_esn'
 %'leaky_esn','leakage',1
 
 esn.internalWeights = esn.spectralRadius * esn.internalWeights_UnitSR;
@@ -29,7 +30,7 @@ nForgetPoints = 11 ; % discard the first 100 points
 
 predictedTestOutput = test_esn(testInputSequence,  trainedEsn, nForgetPoints) ; 
 
-predictedTrainOutput = test_esn(trainInputSequence, trainedEsn, nForgetPoints);
+%predictedTrainOutput = test_esn(trainInputSequence, trainedEsn, nForgetPoints);
 
 % create input-output plots
 %nPlotPointstrain=size(predictedTrainOutput,1);

@@ -1,13 +1,15 @@
 clear all; 
-
+%inputs=load('source/03054500TygartMonthly.dly.txt');
 inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
+%inputs=load('source/03179000bluestoneM.dly.txt');
+%inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=xlsread('source/Datos_Pruebas.xls');
 input=inputs(:,3);
 data=inputs(:,3); %historical data
-years=1;
+years=2;
 [inputstandstart,xlog1start]=translog(input);
 [input,test]=splitData(input,years);
-[less,teststandard]=splitData(inputstandstart,years);
+%[less,teststandard]=splitData(inputstandstart,years);
 MATGEN=0;
         
         % A transformation is required if a time series is not normally distributed
@@ -21,7 +23,9 @@ MATGEN=0;
         % A step before training the neural networkk, 
         % it is often useful to scale the inputs and targets so that they always fall within a specified range. 
         % in this project, the data were scaled in the range of [-1, +1] using the equation:
-       
+        
+        %% input for thomas fiering model 
+        in=inputstand(size(inputstand,1),:);
         
         %neural network based architectures are prepared; 
         [scaledinput,PS]=mapminmax(input');
@@ -31,14 +35,14 @@ MATGEN=0;
         inputSequence= [ones(size(inputSequence,1),1) inputSequence];
         
         %%%% generate an esn 
-        nForgetPoints = 146 ;
+        nForgetPoints = 6 ;
         
-        nInputUnits = 2; nInternalUnits = 19; nOutputUnits = 1; 
+      %  nInputUnits = 2; nInternalUnits = 19; nOutputUnits = 1; 
         %creating and training ESN
-        [net,perfNN] = penESN(inputSequence,outputSequence,nInputUnits,nInternalUnits,nOutputUnits);
+     %   [net,perfNN] = penESN(inputSequence,outputSequence,nInputUnits,nInternalUnits,nOutputUnits);
        % [newinputSequence,outputSequence]=normNN(input(size(input,1)-(12*years)+nForgetPoints),2);
-       predictinputSequence=inputSequence(size(inputSequence,1)-(12*years)-(nForgetPoints-1):end,:);
-       predicted=test_esn(predictinputSequence, net, nForgetPoints);
+    %   predictinputSequence=inputSequence(size(inputSequence,1)-(12*years)-(nForgetPoints-1):end,:);
+   %    predicted=test_esn(predictinputSequence, net, nForgetPoints);
        initSequence=inputSequence(size(inputSequence,1)-(nForgetPoints-1):end,:)
      %   t_n=inputSequence(size(inputSequence,1)-nForgetPoints:end,:);
         %t_n=[1 3; 5 0.4];
@@ -105,8 +109,13 @@ MATGEN=0;
 %         predicted=test_esn(predictinputSequence, net, nForgetPoints);
 %         predicted=  mapminmax('reverse',predicted',PS);
 %         predicted=predicted';
-net=load_esn('ESN03364000EastForkWhiteMonthD')
- numofseries=50;
+%ESN03054500TygartMonthD_leaky_ramdom_ridge
+        %net_ESN=load_esn('ESN03054500TygartMonthD_leaky_ramdom_ridge');
+        %net=load_esn('ESN03054500TygartMonthD');
+        net=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
+       %net=load_esn('ESN03179000bluestoneD_leaky_ramdom_ridge');
+%net=load_esn('ESN3179000monthlyD');
+ numofseries=20;
  count=1;
  MATGEN3=[];
 % %t_nn=t_n
@@ -119,10 +128,12 @@ net=load_esn('ESN03364000EastForkWhiteMonthD')
                     if m==1 
                         mi=13;
                     end
-                   if m==2
+                    if m==2
                         mi=14;
                     end
                     Rvt=tomasandfiering(-1,input,mi);%componente aleatorio 
+                    Yt_1=Thomas_and_FIering_method(Rvt ,input,mi,in);
+                    in=Yt_1;
                     %% 
 %                   %Yvt=sim(net,i(size(i,1)-12+m,1));
 %                 %  Yvt=test_esn(t_n, net, nForgetPoints);
@@ -131,11 +142,12 @@ net=load_esn('ESN03364000EastForkWhiteMonthD')
 %                 %   Yvtn=mapminmax('reverse',Yvt,PS);
 %                    
                     Rvtn=detranslogone(inputstand,xlog1,input,Rvt,m);
-%                    
+                    Yvtn=detranslogone(inputstand,xlog1,input,Yt_1,m);
 %                    predicted(m+12*(y-1),1)=predicted(m+12*(y-1),1);
 %                   %  Rvtn=abs(Rvtn/2-predicted(mod(m,12*years+1)));
 %               %    Rvtn1=abs(Yvtn+Rvt);
                  %   MATGEN(m,ser,y)=predicted(m+12*(y-1),1);
+                    MATGEN_THOMAS(m,ser,y)=Yvtn;
                     MATGEN2(m,ser,y)=Rvtn;
 %                %    t_n(1,:)=[];
                     inputNetworkESN(count,1)=abs(Rvtn);
@@ -178,6 +190,7 @@ net=load_esn('ESN03364000EastForkWhiteMonthD')
 %            % datainputstart=mapminmax('apply',inputm1,PS);
  end
           [rmse,mse]=plotPEN(MATGEN2,test,'Tomas and Fiering');
+          [rmse,mse]=plotPEN(MATGEN_THOMAS,test,'Tomas and Fiering Methods');
           MATGEN4=[];
           MATGEN5=[];
             for n=1:years
@@ -204,3 +217,6 @@ boxplot(MATGEN5','Notch','on')
 hold on 
 plot(test,'-bd','LineWidth',0.5)
 hold off
+
+
+

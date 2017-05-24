@@ -35,10 +35,11 @@ function [MATGEN,input3,inputstand,inputlogg,perfNN,rmse,mse,test]= PEN(years,se
                    Rvt=tomasandfiering(val,input,mi);%componente aleatorio 
                   %Yvt=sim(net,i(size(i,1)-12+m,1));
                    Yvt=sim(net,datainputstart);
-                   %de-scaled valor de la red
+                   %% de-scaled Neural Network output [-1,1]
                    Yvtn=mapminmax('reverse',Yvt,PS);
                    
                    Rvtn=detranslogone(inputstand,xlog1,input,Rvt+Yvtn,m);
+                   
                    Rvtn=abs(Rvtn);
                    %Rvtn=detranslogone(inputstand,xlog1,input,Rvt+Yvtn,mi);
                    %fprintf('valor mes %d = %f',mi,Rvtn,Yvt);
@@ -57,6 +58,6 @@ function [MATGEN,input3,inputstand,inputlogg,perfNN,rmse,mse,test]= PEN(years,se
         %inputm1;
         input3=input;
         
-       [rmse,mse]=plotPEN(MATGEN,test);
+       [rmse,mse]=plotPEN(MATGEN,test,'PEN');
 
 end

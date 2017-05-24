@@ -11,7 +11,7 @@ clear all;
 
 %%%% generate the training data
 
-sequenceLength = 200;
+sequenceLength = 30;
 
 disp('Generating data ............');
 disp(sprintf('Sequence Length %g', sequenceLength ));
@@ -34,9 +34,9 @@ train_fraction = 0.5 ; % use 50% in training and 50% in testing
 nInputUnits = 2; nInternalUnits = 15; nOutputUnits = 1; 
 % 
 esn = generate_esn(nInputUnits, nInternalUnits, nOutputUnits, ...
-    'spectralRadius',0.4,'inputScaling',[0.1;0.1],'inputShift',[0;0], ...
+    'spectralRadius',0.5,'inputScaling',[0.1;0.1],'inputShift',[0;0], ...
     'teacherScaling',[0.3],'teacherShift',[-0.2],'feedbackScaling', 0, ...
-    'type', 'leaky_esn','leakage',1); 
+    'type', 'plain_esn'); 
 %leaky_esn','leakage',1
 %%% VARIANTS YOU MAY WISH TO TRY OUT
 % (Comment out the above "esn = ...", comment in one of the variants
@@ -73,8 +73,8 @@ nForgetPoints = 4 ; % discard the first 100 points
 % save_esn(trainedEsn, 'esn_narma_demo_1'); 
 
 %%%% plot the internal states of 4 units
-nPoints = 4 ; 
-plot_states(stateMatrix,[1 2 3 4], nPoints, 1, 'traces of first 4 reservoir units') ; 
+nPoints = 6 ; 
+plot_states(stateMatrix,[1 2 3 4 5 6], nPoints, 1, 'traces of first 4 reservoir units') ; 
 
 % compute the output of the trained ESN on the training and testing data,
 % discarding the first nForgetPoints of each

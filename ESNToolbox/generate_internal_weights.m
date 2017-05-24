@@ -24,6 +24,7 @@ while success == 0
     % internalWeights matrix
     try,
         internalWeights = sprand(nInternalUnits, nInternalUnits, connectivity);
+        %internalWeights = sprandn(nInternalUnits, nInternalUnits, connectivity);
         internalWeights(internalWeights ~= 0) = ...
             internalWeights(internalWeights ~= 0)  - 0.5;
         opts.disp = 0;

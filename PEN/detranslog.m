@@ -17,7 +17,7 @@ for i=1:12
     a=0.85;
     ct=a/(g^2);
     xvt=(xi*std(logdata))+mean(logdata);
-    destdData1=10.^(xvt)-(ct*ximean);
+    destdData1=exp(xvt)-(ct*ximean);
     %XLOG=log10(xi+(ct*ximean));%normalizada
     %Xstda=(XLOG-mean(XLOG))/std(XLOG)
     

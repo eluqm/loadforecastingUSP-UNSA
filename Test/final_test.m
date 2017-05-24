@@ -1,9 +1,9 @@
 clear all;
-
+inputs=xlsread('source/Datos_Pruebas.xls');
 %inputs=load('source/03054500TygartMonthly.dly.txt');
 %inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
-inputs=load('source/03179000bluestoneM.dly.txt');
-input=inputs(:,3);
+%inputs=load('source/03179000bluestoneM.dly.txt');
+input=inputs(:,4);
 fprintf('skewness coefic no-log %f \n',skewness(input))
 MATGEN3=[];
 %figure
@@ -11,7 +11,7 @@ MATGEN3=[];
 %hold on
 %historical data 1 =, 2= , 3=
 data=inputs(:,3); 
-years=2;
+years=1;
 [input,test]=splitData(input,years);
 
         %% A transformation is required if a time series is not normally distributed
@@ -19,26 +19,32 @@ years=2;
         % if skewness coefficients are biased. Therefore, a transformation to reduce this skewness closer to zero was needed.
         % The skewness of the observed data is reduced using log-transformation
         [inputstand,xlog1]=translog(input);
-        inputlog=log(input);
+        
         
         %% Before training, it is often useful to scale the inputs and targets 
         % so that they always fall within a specified range. 
         % The function mapminmax scales inputs and targets so that they fall in the range [–1,1]. 
-        [scaledinput,PS]=mapminmax(input');
+            %% [scaledinput,PS]=mapminmax(input');
+        [scaledinput,PS]=mapminmax(inputstand');
         [inputSequence,outputSequence]=normNN(scaledinput',1);%short time delay memory = 2 , without  bias
         inputSequence= [ones(size(inputSequence,1),1) inputSequence];
      
         %% initial nForgetPoints time points ( can be disregarded)
-        nForgetPoints = 48 ;
+        nForgetPoints = 12 ;
         initSequence=inputSequence(size(inputSequence,1)-(nForgetPoints-1):end,:);
        
         numofseries=20;
         count=1;
         MATGEN3=[];
-        %net_ESN=load_esn('ESN03054500TygartMonthD_leaky');
+        %ESN03054500TygartMonthD_leaky_ramdom_ridge
+        %net_ESN=load_esn('ESN03054500TygartMonthD_leaky_ramdom_ridge');
         %net_ESN=load_esn('ESN03054500TygartMonthD');
+        %net_ESN=load_esn('ESN03054500Tygart_leaky_ridge_standard');
+        net_ESN=load_esn('ESNPanie_leaky_ridge_standard');
         %net_ESN=load_esn('ESN03364000EastForkWhiteMonthD');
-       net_ESN=load_esn('ESN3179000monthlyD');
+        %net_ESN=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
+        %net_ESN=load_esn('ESN03179000bluestone_leaky_ridge_standard');
+        %net_ESN=load_esn('ESN03179000bluestoneD_leaky_ramdom_ridge');
         %% initiate state  matrix
         if nForgetPoints >= 0
             stateCollectMat = ...
@@ -78,10 +84,16 @@ years=2;
                     %Random Component   
                     Rvt=tomasandfiering(-1,input,mi);                
                     Rvtn=detranslogone(inputstand,xlog1,input,Rvt,m);
-                    RvtnNorm=mapminmax('apply',Rvtn,PS);
+                    %% RvtnNorm=mapminmax('apply',Rvtn,PS);
                     %% Rvtn + ESN_output
                     if count < 2
-                        in=[1 RvtnNorm+out/10];  
+                        out=getOutESN(totalstate(1:size(totalstate)-1,1)',net_ESN,PS);
+                        outrev=mapminmax('reverse',out,PS);
+                        %% inminmax=mapminmax('apply',outrev+Rvt,PS);
+                        inminmax=detranslogone(inputstand,xlog1,input,Rvt+outrev,m);
+                        inminmax=translogone(input,inminmax,m);
+                        inminmax=mapminmax('apply',inminmax,PS);
+                        in=[1 inminmax];  
                        % totalstate = [internalState; in;out]
                    %    out=getOutESN(totalstate(1:size(totalstate)-1,1)',net_ESN,PS);
                    %    outrev=mapminmax('reverse',out,PS);
@@ -90,26 +102,25 @@ years=2;
                    % out=getOutESN(stateCollectMat(count,:),net_ESN,PS);
                   %  outrev=mapminmax('reverse',out,PS);
                   %  in=[1 mapminmax('apply',(Rvtn+outrev)/2,PS)];
-                        in=[1 RvtnNorm+out/100];  
+                  
+                       % in=[1 RvtnNorm+out];  
+                        out=getOutESN(totalstate(1:size(totalstate)-1,1)',net_ESN,PS);
+                        outrev=mapminmax('reverse',out,PS);
+                        inminmax=detranslogone(inputstand,xlog1,input,Rvt+outrev,m);
+                        inminmax=translogone(input,inminmax,m);
+                        inminmax=mapminmax('apply',inminmax,PS);
+                        in=[1 inminmax];  
+                        %% inminmax=mapminmax('apply',outrev+Rvtn,PS);
+                        %% in=[1 inminmax];  
+                       % in=[1 RvtnNorm+out];
                     end
                     
                     
                     %% Compute matrix of states for syntethic serie "n" for
-                    [out,stateCollectMat,totalstate]=compute_statematrix_nserie(stateCollectMat,totalstate,in,[], net_ESN, nForgetPoints,count+nForgetPoints);
-                    
-                    
-                    
-                    
-                    
+                    [out,stateCollectMat,totalstate]=compute_statematrix_nserie(stateCollectMat,totalstate,in,[], net_ESN, nForgetPoints,count+nForgetPoints);                                                                             
                     MATGEN2(m,ser,y)=Rvtn;
-
-        
-
                   count=count+1;
-                 end
-                
-                
-                
+                 end   
              end
              %% stateCollection*outputWeighs
              outputSequence = stateCollectMat * net_ESN.outputWeights' ; 
@@ -119,6 +130,20 @@ years=2;
                 outputSequence = outputSequence - repmat(net_ESN.teacherShift',[nOutputPoints 1]) ; 
                 outputSequence = outputSequence / diag(net_ESN.teacherScaling) ; 
              predictedde=mapminmax('reverse',outputSequence,PS);
+             for y=1:years                          
+                 for m=1:12
+%                   %Rvt= tomasandfiering(val,m)
+                    mi=m;
+                    if m==1 
+                        mi=13;
+                    end
+                   if m==2
+                        mi=14;
+                   end
+                   predictedde((y-1)*12+m,1)=detranslogone(inputstand,xlog1,input,predictedde((y-1)*12+m,1),m);
+                 end
+             end
+             
             % inputNetworkESN1=mapminmax('apply',inputNetworkESN',PS);
             % inputNoiseNetwork=[ones(size(inputNetworkESN1',1),1) inputNetworkESN1']; 
             MATGEN3=[MATGEN3 abs(predictedde(:,1))];

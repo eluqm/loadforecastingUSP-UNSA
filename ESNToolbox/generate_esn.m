@@ -91,11 +91,14 @@ esn.internalWeights_UnitSR = generate_internal_weights(nInternalUnits, ...
 esn.nTotalUnits = nTotalUnits; 
 
 % input weight matrix has weight vectors per input unit in colums
+%In general, you can generate N random numbers in the interval (a,b) with the formula r = a + (b-a).*rand(N,1).
+%for test in hidrological series
 esn.inputWeights = 2.0 * rand(nInternalUnits, nInputUnits)- 1.0;
-
+%esn.inputWeights =  -0.1 + (0.1+0.1).*rand(nInternalUnits, nInputUnits);
 % output weight matrix has weights for output units in rows
 % includes weights for input-to-output connections
-esn.outputWeights = zeros(nOutputUnits, nInternalUnits + nInputUnits);
+esn.outputWeights = zeros(nOutputUnits, nInternalUnits+nInputUnits);
+%esn.outputWeights = zeros(nOutputUnits, nInternalUnits);
 
 %output feedback weight matrix has weights in columns
 esn.feedbackWeights = (2.0 * rand(nInternalUnits, nOutputUnits)- 1.0);
@@ -119,7 +122,7 @@ esn.inverseOutputActivationFunction = 'identity' ; % options:
                                                    % identity or
                                                    % atanh or sigmoid01_inv
 esn.spectralRadius = 1 ; 
-esn.feedbackScaling = zeros(nOutputUnits, 1); 
+esn.feedbackScaling = ones(nOutputUnits, 1)*0.01; 
 esn.trained = 0 ; 
 esn.type = 'plain_esn' ; 
 esn.timeConstants = ones(esn.nInternalUnits,1); 
@@ -156,8 +159,8 @@ end
 
 %%%% error checking
 % check that inputScaling has correct format
-disp(fprintf('input scaling size %d , input units %d',size(esn.inputScaling,1),esn.nInputUnits))
-disp(fprintf('%s',esn.inputScaling))
+%disp(fprintf('input scaling size %d , input units %d',size(esn.inputScaling,1),esn.nInputUnits))
+%disp(fprintf('%s',esn.inputScaling))
 if size(esn.inputScaling,1) ~= esn.nInputUnits
     error('the size of the inputScaling does not match the number of input units 1'); 
 end

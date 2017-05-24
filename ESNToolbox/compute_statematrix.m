@@ -128,7 +128,7 @@ if nForgetPoints < 0
         totalstate = [internalState; in; netOut];
     end
 end
-
+outSequence2=[];
 collectIndex = 0;
 for i = 1:nDataPoints
     
@@ -169,7 +169,7 @@ for i = 1:nDataPoints
         netOut = feval(esn.outputActivationFunction, esn.outputWeights * [internalState; in]);
     end
     
-    
+    outSequence2(i)=netOut;
     totalstate = [internalState; in; netOut];
     
     %collect state
@@ -182,3 +182,4 @@ for i = 1:nDataPoints
     end
     
 end
+outSequence2;

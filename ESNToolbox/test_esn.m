@@ -45,7 +45,9 @@ else % case where the last (fourth and fifth) input argument gives a starting ve
         compute_statematrix(inputSequence, [], esn, nForgetPoints, 'startingState', totalstate) ;
 end
 
+
 outputSequence = stateCollection * esn.outputWeights' ; 
+outputSequence;
 %%%% scale and shift the outputSequence back to its original size
 nOutputPoints = length(outputSequence(:,1)) ; 
 outputSequence = feval(esn.outputActivationFunction, outputSequence); 
