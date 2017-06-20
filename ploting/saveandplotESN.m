@@ -6,10 +6,10 @@ name='ESN03054500TygartMonthD';
 for n=0.1:0.1:0.9
    [val,ind] =min(tseries.(tsnames(count)).Data);
    
-plot(tseries.(tsnames(count)),':','LineWidth' , 0.2)
-hold on
-index(count,:)=[val,ind];
-count=count+1;
+    plot(tseries.(tsnames(count)),':','LineWidth' , 0.2)
+    hold on
+    index(count,:)=[val,ind];
+    count=count+1;
 end
 [value,i]=min(index(:,1));
 
@@ -19,8 +19,8 @@ tseries.(tsnames(i)) = addevent(tseries.(tsnames(i)),min_event);
 hold on
 plot(tseries.(tsnames(i)),'.-b','LineWidth' , 1);
 %grid on
-% for legends are considered that tscollection put by default x as sufix name of
-% time serie
+%% for legends are considered that tscollection put by default x as sufix name of
+%% time serie
 for m=1:size(tsnames,2) 
    %if m ~=i 
        tsnames(1,m)=regexprep(tsnames(1,m),'x','0.');

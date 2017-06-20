@@ -1,9 +1,11 @@
 clear all;
-inputs=xlsread('source/Datos_Pruebas.xls');
+
+%inputs=xlsread('source/Datos_Pruebas.xls');
 %inputs=load('source/03054500TygartMonthly.dly.txt');
-%inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
+inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=load('source/03179000bluestoneM.dly.txt');
-input=inputs(:,4);
+%inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
+input=inputs(:,3);
 fprintf('skewness coefic no-log %f \n',skewness(input))
 MATGEN3=[];
 %figure
@@ -40,9 +42,11 @@ years=1;
         %net_ESN=load_esn('ESN03054500TygartMonthD_leaky_ramdom_ridge');
         %net_ESN=load_esn('ESN03054500TygartMonthD');
         %net_ESN=load_esn('ESN03054500Tygart_leaky_ridge_standard');
-        net_ESN=load_esn('ESNPanie_leaky_ridge_standard');
+        %net_ESN=load_esn('ESNPanie_leaky_ridge_standard');
+        %net_ESN=load_esn('ESN01541500CLEARFIELD_leaky_ramdom_ridge');
         %net_ESN=load_esn('ESN03364000EastForkWhiteMonthD');
         %net_ESN=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
+        net_ESN=load_esn('ESN03364000EastForkWhiteMonth_leaky_ridge_standard');
         %net_ESN=load_esn('ESN03179000bluestone_leaky_ridge_standard');
         %net_ESN=load_esn('ESN03179000bluestoneD_leaky_ramdom_ridge');
         %% initiate state  matrix
@@ -107,6 +111,7 @@ years=1;
                         out=getOutESN(totalstate(1:size(totalstate)-1,1)',net_ESN,PS);
                         outrev=mapminmax('reverse',out,PS);
                         inminmax=detranslogone(inputstand,xlog1,input,Rvt+outrev,m);
+                        %inminmax_2=detranslogone(inputstand,xlog1,input,outrev,m);
                         inminmax=translogone(input,inminmax,m);
                         inminmax=mapminmax('apply',inminmax,PS);
                         in=[1 inminmax];  
@@ -152,13 +157,13 @@ years=1;
             stateCollectMat = ...
             zeros(years*12, net_ESN.nInputUnits + net_ESN.nInternalUnits) ; 
        end
- [rmse,mse]=plotPEN(MATGEN2,test,'Tomas and Fiering');
+ plotPEN(MATGEN2,test,'Tomas and Fiering');
  MATGEN4=[];
-            for n=1:years
-                MATGEN4(:,:,n)=MATGEN3((n-1)*12+1:12*n,:);
-                %MATGEN5=[MATGEN5 ; MATGEN2(:,:,n)];
-            end
-            [rmse,mse]=plotPEN(MATGEN4,test,'ESN');
+    for n=1:years
+        MATGEN4(:,:,n)=MATGEN3((n-1)*12+1:12*n,:);
+        %MATGEN5=[MATGEN5 ; MATGEN2(:,:,n)];
+    end
+ plotPEN(MATGEN4,test,'ESN');
             
          %  parfor o=1:10
          %      y(o)=rand()

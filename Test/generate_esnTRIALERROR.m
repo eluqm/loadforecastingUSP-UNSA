@@ -6,9 +6,10 @@ function[trainedEsn,testError]=generate_esnTRIALERROR(inputSequence,outputSequen
 esn = generate_esn(nInputUnits, nInternalUnits, nOutputUnits, ...
     'spectralRadius',spectral_radious, 'inputScaling',[0.1;0.1],...
     'teacherScaling',[0.3],'teacherShift',[-0.2],'feedbackScaling', 0, ...
-    'type', 'leaky_esn','leakage',1,'methodWeightCompute','ridge_regression');
+    'type','leaky_esn','leakage',1,'methodWeightCompute','ridge_regression');
 % 'plain_esn'
 %'leaky_esn','leakage',1
+% methodWeightCompute','ridge_regression'
 
 esn.internalWeights = esn.spectralRadius * esn.internalWeights_UnitSR;
 
