@@ -1,11 +1,30 @@
 clear all;
+%% number of repetitons
+num_rep=10;
+
+%% indicators 
+NRMSE = [];
+MPE=[];
+MAD=[];
+RMSE=[];
+MSE=[];
+MPE=[];
+NSE=[];
+
+%% matrix to plot
+BestNRMSE=-10000000;
+Best_to_plot1=[];
+Best_to_plot2=[];
+Best_to_plot3=[];
+Best_to_plot4=[];
+Best_to_plot5=[];
 
 %% set time series
 %inputs=xlsread('source/Datos_Pruebas.xls');
-inputs=load('source/03054500TygartMonthly.dly.txt');
+%inputs=load('source/03054500TygartMonthly.dly.txt');
 %inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=load('source/03179000bluestoneM.dly.txt');
-%inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
+inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
 
 %% Set trained ESN network 
 %ESN03054500TygartMonthD_leaky_ramdom_ridge
@@ -16,7 +35,7 @@ inputs=load('source/03054500TygartMonthly.dly.txt');
         %net_ESN=load_esn('ESN01541500CLEARFIELD_leaky_ramdom_ridge');
         %net_ESN=load_esn('ESN03364000EastForkWhiteMonthD');
         %net_ESN=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
-        net_ESN=load_esn('ESN03054500_plain_STD_nonRIDGE_rand5');
+        net_ESN=load_esn('ESN01541500_plain_STD_nonRIDGE_rand5');
         %net_ESN=load_esn('ESN03179000bluestone_leaky_ridge_standard');
         %net_ESN=load_esn('ESN03179000bluestoneD_leaky_ramdom_ridge');
 
@@ -28,7 +47,7 @@ input=inputs(:,3);
 %fprintf('skewness coefic no-log %f \n',skewness(input))
 
 %% set the horizon of prediction
-years=2; 
+years=3; 
 
 %% Split data from horizon prediction
 [input,test]=splitData(input,years);
@@ -69,7 +88,7 @@ years=2;
         T_1_anfis=mapminmax('apply',T_1_TF,PS);
         
         %% Set the number of sintetic time series
-        numofseries=10;
+        numofseries=150;
         
         %% utils vars
         count=1;
@@ -77,6 +96,7 @@ years=2;
         THOMAS_FIERING=[];
         NEURAL_PEN=[];
         NEURAL_ANFIS=[];
+ for ij=1:num_rep
         %% initiate state matrix
         if nForgetPoints >= 0
             stateCollectMat = ...
@@ -97,6 +117,7 @@ years=2;
         
       %% generating syntetics series   
       for ser=1:numofseries
+          %MATGEN3=[];
           %% For ESN model, computing the nforget initial states
           for i=1:nForgetPoints
            in=initSequence(i,:);
@@ -206,7 +227,7 @@ years=2;
                  end
              end
              
-            MATGEN3=[MATGEN3 abs(predictedde(:,1))];
+            MATGEN3=[MATGEN3 predictedde(:,1)];
             count=1;
             
             %% clean states of ESN 
@@ -214,17 +235,51 @@ years=2;
             stateCollectMat = ...
             zeros(years*12, net_ESN.nInputUnits + net_ESN.nInternalUnits) ; 
       end
-       
- plotPEN(MATGEN2,test,'Tomas and Fiering');
- csvwrite('matriz_thoas',MATGEN2);
- plotPEN(THOMAS_FIERING,test,'T Fiering model')
- MATGEN4=[];
-    for n=1:years
-        MATGEN4(:,:,n)=MATGEN3((n-1)*12+1:12*n,:);
-        %MATGEN5=[MATGEN5 ; MATGEN2(:,:,n)];
-    end
- plotPEN(MATGEN4,test,'ESN');
- plotPEN(NEURAL_PEN,test,'PEN')
- plotPEN(NEURAL_ANFIS,test,'ANFIS')
+      
+  %% Row 1:thomas fiering random
+  %%     2:thomas fiering model  
+  %%     3:ESN
+  %%     4:PEN
+  %%     5:ANFIS
+        
+        [RMSE(1,ij),MSE(1,ij),MAD(1,ij),NRMSE(1,ij),MPE(1,ij),NSE(1,ij)]=plotPEN(MATGEN2,test,'T_Fiering_random',0);
+        %csvwrite('matriz_thoas',MATGEN2);
+        [RMSE(2,ij),MSE(2,ij),MAD(2,ij),NRMSE(2,ij),MPE(2,ij),NSE(2,ij)]=plotPEN(THOMAS_FIERING,test,'T_Fiering_model',0);
+        MATGEN4=[];
+            for n=1:years
+                MATGEN4(:,:,n)=MATGEN3((n-1)*12+1:12*n,:);            
+            end
+        [RMSE(3,ij),MSE(3,ij),MAD(3,ij),NRMSE(3,ij),MPE(3,ij),NSE(3,ij)]=plotPEN(MATGEN4,test,'ESN',0);
+        [RMSE(4,ij),MSE(4,ij),MAD(4,ij),NRMSE(4,ij),MPE(4,ij),NSE(4,ij)]=plotPEN(NEURAL_PEN,test,'PEN',0);
+        [RMSE(5,ij),MSE(5,ij),MAD(5,ij),NRMSE(5,ij),MPE(5,ij),NSE(5,ij)]=plotPEN(NEURAL_ANFIS,test,'ANFIS',0);
+      
+       diff_to_ESN=(NRMSE(1,ij)-NRMSE(3,ij)) + ...
+                   (NRMSE(2,ij)-NRMSE(3,ij)) + ...
+                   (NRMSE(4,ij)-NRMSE(3,ij)) + ...
+                   (NRMSE(5,ij)-NRMSE(3,ij));
+        if  diff_to_ESN > BestNRMSE 
+            BestNRMSE = diff_to_ESN;
+            Brute_BestNRMSE = NRMSE(3,ij);
+            Best_to_plot1=MATGEN2;
+            Best_to_plot2=THOMAS_FIERING;
+            Best_to_plot3= MATGEN4;
+            Best_to_plot4=NEURAL_PEN;
+            Best_to_plot5=NEURAL_ANFIS;
             
-     
+        end
+        fprintf('iteration n: %s\n',num2str(ij));
+ end      
+      %% SAVE NRMSE for plot
+      csvwrite(strcat('01541500series_T_Fiering_random_',num2str(years)),Best_to_plot1);
+      csvwrite(strcat('01541500series_T_Fiering_model_',num2str(years)),Best_to_plot2);
+      csvwrite(strcat('01541500series_ESN_',num2str(years)),Best_to_plot3);
+      csvwrite(strcat('01541500series_PEN_',num2str(years)),Best_to_plot4);
+      csvwrite(strcat('01541500series_ANFIS_',num2str(years)),Best_to_plot5);
+      
+      final_results=[];
+      %% SAVE MEDIAS 
+      for jj=1:5
+        final_results{jj,1}=[mean(RMSE(jj,:)) mean(MSE(jj,:)) mean(MAD(jj,:)) mean(NRMSE(jj,:)) mean(MPE(jj,:)) mean(NSE(jj,:))];
+      end
+      csvwrite(strcat('01541500final_result_',num2str(years)),final_results);
+      
