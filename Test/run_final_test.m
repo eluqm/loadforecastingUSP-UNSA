@@ -4,7 +4,6 @@ num_rep=10;
 
 %% indicators 
 NRMSE = [];
-MPE=[];
 MAD=[];
 RMSE=[];
 MSE=[];
@@ -22,9 +21,9 @@ Best_to_plot5=[];
 %% set time series
 %inputs=xlsread('source/Datos_Pruebas.xls');
 %inputs=load('source/03054500TygartMonthly.dly.txt');
-inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
+%inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=load('source/03179000bluestoneM.dly.txt');
-%inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
+inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
 
 %% Set trained ESN network 
 %ESN03054500TygartMonthD_leaky_ramdom_ridge
@@ -35,7 +34,7 @@ inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
         %net_ESN=load_esn('ESN01541500CLEARFIELD_leaky_ramdom_ridge');
         %net_ESN=load_esn('ESN03364000EastForkWhiteMonthD');
         %net_ESN=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
-        net_ESN=load_esn('ESN03364000_plain_STD_nonRIDGE_rand5');
+        net_ESN=load_esn('ESN01541500_plain_STD_nonRIDGE_rand5');
         %net_ESN=load_esn('ESN03179000bluestone_leaky_ridge_standard');
         %net_ESN=load_esn('ESN03179000bluestoneD_leaky_ramdom_ridge');
 
@@ -47,7 +46,7 @@ input=inputs(:,3);
 %fprintf('skewness coefic no-log %f \n',skewness(input))
 
 %% set the horizon of prediction
-years=3; 
+years=1; 
 
 %% Split data from horizon prediction
 [input,test]=splitData(input,years);
@@ -74,7 +73,7 @@ years=3;
         inputSequence= [ones(size(inputSequence,1),1) inputSequence];   %input for ESN with bias = 1
      
         %% initial nForgetPoints time points ( can be disregarded)
-        nForgetPoints = 12 ;
+        nForgetPoints = 24 ;
         initSequence=inputSequence(size(inputSequence,1)-(nForgetPoints-1):end,:);
         
         %% init and train NN 
@@ -95,7 +94,9 @@ years=3;
         MATGEN3=[];
         THOMAS_FIERING=[];
         NEURAL_PEN=[];
+        neural_pred_pen=[];
         NEURAL_ANFIS=[];
+        neural_pred_anfis=[];
  for ij=1:num_rep
         %% initiate state matrix
         if nForgetPoints >= 0
@@ -112,11 +113,20 @@ years=3;
          totalstate = zeros(net_ESN.nInputUnits + net_ESN.nInternalUnits + net_ESN.nOutputUnits, 1);
          %internalState = zeros(esn.nInternalUnits, 1);
         end
-       
-      MATGEN3(:,:,:)=[];  
-        
+       %% Reset Series 
+       NEURAL_PEN(:,:,:)=[]; 
+       NEURAL_ANFIS(:,:,:)=[];
+       %MATGEN2(:,:,:)=[]; 
+       MATGEN3(:,:,:)=[]; 
+       ser=1;
       %% generating syntetics series   
-      for ser=1:numofseries
+      while ser <= numofseries
+          %% Set initialitation
+          T_1_TF=inputstand(size(inputstand,1),:);
+          T_1_NN=T_1_TF;
+          T_1_NN=mapminmax('apply',T_1_NN,PS);
+          T_1_NN=[1 T_1_NN];
+          T_1_anfis=mapminmax('apply',T_1_TF,PS);
           
           %% For ESN model, computing the nforget initial states
           for i=1:nForgetPoints
@@ -146,6 +156,7 @@ years=3;
                     %%RVT + NN_outut
                         Ynnt_anfis_t=mapminmax('reverse',Ynn_anfis,PS);
                         Yvnnt_anfis_t=abs(detranslogone(inputstand,xlog1,input,Rvt+Ynnt_anfis_t,m));
+                        neural_pred_anfis(count,1)=Yvnnt_anfis_t;
                         NEURAL_ANFIS(m,ser,y)=Yvnnt_anfis_t;
                     Ynnt_anfis_t=translogone(input,Yvnnt_anfis_t,m);
                     Ynnt_anfis_t2=mapminmax('apply',Ynnt_anfis_t,PS);
@@ -156,6 +167,7 @@ years=3;
                         %%RVT + NN_outut
                         Ynnt=mapminmax('reverse',Ynn,PS);
                         Yvnnt=abs(detranslogone(inputstand,xlog1,input,Rvt+Ynnt,m));
+                        neural_pred_pen(count,1)=Yvnnt;
                         NEURAL_PEN(m,ser,y)=Yvnnt;
                     Ynnt=translogone(input,Yvnnt,m);
                     Ynnt2=mapminmax('apply',Ynnt,PS);
@@ -225,15 +237,55 @@ years=3;
                    end
                    predictedde((y-1)*12+m,1)=detranslogone(inputstand,xlog1,input,predictedde((y-1)*12+m,1),m);
                  end
+             end 
+             
+             %% try and cath
+             if sum(isinf(predictedde(:,1))) > 0  || ~isempty(predictedde(predictedde(:,1)>1.0e+2))
+                
+                 %% clean states of ESN 
+                 totalstate = zeros(net_ESN.nInputUnits + net_ESN.nInternalUnits + net_ESN.nOutputUnits, 1);
+                 stateCollectMat = ...
+                 zeros(years*12, net_ESN.nInputUnits + net_ESN.nInternalUnits) ; 
+                 count=1;
+                 XX=sprintf('wrong value %s',num2str(NEURAL_PEN(m,ser,y)));
+                 display(XX)
+                 display('WARNING  !!! wrong time serie ');
+                 continue 
+             end
+             if sum(isinf(neural_pred_anfis(:,1)))>0   || ~isempty(neural_pred_anfis(neural_pred_anfis(:,1)>1.0e+2))
+                
+                 %% clean states of ESN 
+                 totalstate = zeros(net_ESN.nInputUnits + net_ESN.nInternalUnits + net_ESN.nOutputUnits, 1);
+                 stateCollectMat = ...
+                 zeros(years*12, net_ESN.nInputUnits + net_ESN.nInternalUnits) ; 
+                 count=1;
+                 XX=sprintf('wrong value %s',num2str(NEURAL_PEN(m,ser,y)));
+                 display(XX)
+                 display('WARNING  !!! wrong time serie ');
+                 continue 
+             end
+             if sum(isinf(neural_pred_pen(:,1)))>0   || ~isempty(neural_pred_pen(neural_pred_pen(:,1)>1.0e+2))
+                 %% clean states of ESN 
+                 totalstate = zeros(net_ESN.nInputUnits + net_ESN.nInternalUnits + net_ESN.nOutputUnits, 1);
+                 stateCollectMat = ...
+                 zeros(years*12, net_ESN.nInputUnits + net_ESN.nInternalUnits) ; 
+                 count=1;
+                 XX=sprintf('wrong value %s',num2str(NEURAL_PEN(m,ser,y)));
+                 display(XX)
+                 display('WARNING  !!! wrong time serie ');
+                 continue 
              end
              
-            MATGEN3=[MATGEN3, predictedde(:,1)];
+             
+             
+            MATGEN3=[MATGEN3 predictedde(:,1)];
             count=1;
             
             %% clean states of ESN 
             totalstate = zeros(net_ESN.nInputUnits + net_ESN.nInternalUnits + net_ESN.nOutputUnits, 1);
             stateCollectMat = ...
             zeros(years*12, net_ESN.nInputUnits + net_ESN.nInternalUnits) ; 
+            ser=ser+1;
       end
       
   %% Row 1:thomas fiering random
@@ -257,7 +309,7 @@ years=3;
                    (NRMSE(2,ij)-NRMSE(3,ij)) + ...
                    (NRMSE(4,ij)-NRMSE(3,ij)) + ...
                    (NRMSE(5,ij)-NRMSE(3,ij));
-        if  diff_to_ESN > BestNRMSE 
+         if  diff_to_ESN > BestNRMSE 
             BestNRMSE = diff_to_ESN;
             Brute_BestNRMSE = NRMSE(3,ij);
             Best_to_plot1=MATGEN2;
@@ -270,16 +322,16 @@ years=3;
         fprintf('iteration n: %s\n',num2str(ij));
  end      
       %% SAVE NRMSE for plot
-      csvwrite(strcat('03364000series_T_Fiering_random_',num2str(years)),Best_to_plot1);
-      csvwrite(strcat('03364000series_T_Fiering_model_',num2str(years)),Best_to_plot2);
-      csvwrite(strcat('03364000series_ESN_',num2str(years)),Best_to_plot3);
-      csvwrite(strcat('03364000series_PEN_',num2str(years)),Best_to_plot4);
-      csvwrite(strcat('03364000series_ANFIS_',num2str(years)),Best_to_plot5);
+      csvwrite(strcat('01541500series_T_Fiering_random_',num2str(years)),Best_to_plot1);
+      csvwrite(strcat('01541500series_T_Fiering_model_',num2str(years)),Best_to_plot2);
+      csvwrite(strcat('01541500series_ESN_',num2str(years)),Best_to_plot3);
+      csvwrite(strcat('01541500series_PEN_',num2str(years)),Best_to_plot4);
+      csvwrite(strcat('01541500series_ANFIS_',num2str(years)),Best_to_plot5);
       
       final_results=[];
       %% SAVE MEDIAS 
       for jj=1:5
         final_results{jj,1}=[mean(RMSE(jj,:)) mean(MSE(jj,:)) mean(MAD(jj,:)) mean(NRMSE(jj,:)) mean(MPE(jj,:)) mean(NSE(jj,:))];
       end
-      csvwrite(strcat('03364000final_result_',num2str(years)),final_results);
+      csvwrite(strcat('01541500final_result_',num2str(years)),final_results);
       
