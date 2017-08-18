@@ -136,9 +136,14 @@ end
         %% RMSE and MSE error
         if size(test,1)>0        
                 RMSE=sqrt(sum((fxi-test).^2)/size(fxi,1));
+                
                 MSE=sum((fxi-test).^2)/size(fxi,1);
                 if MSE == Inf || MSE == -Inf
-                    error('error.')
+                    display(test)
+                    display(fxi)
+                    display(sum((fxi-test).^2));
+                    error('error. size = %d ',size(fxi,1))
+                    
                 end
         end 
         %disp(sprintf(' RMSE = %s de %s', num2str(RMSE),name))
