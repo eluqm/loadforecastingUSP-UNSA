@@ -1,6 +1,6 @@
 function data=detranslogone(inputstand,inputlog,input,num,mess)
 count=1;
-count2=1;
+
 xi=0;
 yi=0;
 logdata=0;

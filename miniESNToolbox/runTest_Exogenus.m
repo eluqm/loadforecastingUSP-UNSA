@@ -2,7 +2,7 @@
 clear all;
 seed=rng;
 inputs=xlsread('source/Datos_Pruebas.xls');
-
+inputs_exo=load('source/ersst4.indices.txt');
 %inputs=load('source/03054500TygartMonthly.dly.txt');
 %inputs=load('source/03179000bluestoneM.dly.txt');
 %inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
@@ -13,12 +13,13 @@ inputs=xlsread('source/Datos_Pruebas.xls');
 
 property=10;
 input=inputs(:,property);
+input_exoge=inputs_exo(:,9);
 
 configurationvalue=100000;
 configuration=[];
 bestNet=struct;
 year=2;
-standar_status=0; % 0 or 1 whether data input is no-standardized or standardized 
+standar_status=1; % 0 or 1 whether data input is no-standardized or standardized 
 
 %% max values of spectral radious and reservoir size
 reservoirNumber=70; %max value
@@ -28,7 +29,7 @@ nForgetPoints = 11 ; %value
 random_times=5;
 
 %% Esn configuration
-nInputUnits = 2; %nInternalUnits = 30; 
+nInputUnits = 3; %nInternalUnits = 30; 
 nOutputUnits = 1; 
 bestFinal=struct('error',00.1,'networkESN',struct);        
 configuration=struct('error',00.1,'net',struct); 
@@ -36,15 +37,20 @@ configuration_color_map=zeros(spectral_radious*10,(reservoirNumber-10)+1);
 configuration_by_sparce=zeros(random_times,1);
 %% neural network based architectures are prepared; 
         [input,test]=splitData(input,year);
+        [input_exoge,test_exoge]=splitData(input_exoge,year);
+        
         scaledinput=[];
         if standar_status>0
             [inputstand,xlog1]=translog(input);
             [scaledinput,PS]=mapminmax(inputstand');
+            [scaledinput_exoge,PS_exoge]=mapminmax(input_exoge');
         else
             [scaledinput,PS]=mapminmax(input');
+            [scaledinput_exoge,PS_exoge]=mapminmax(input_exoge');
         end
         [inputSequence,outputSequence]=normNN(scaledinput',1);
-        inputSequence= [ones(size(inputSequence,1),1) inputSequence];
+        [inputSequence_exoge,outputSequence_exoge]=normNN(scaledinput_exoge',1);
+        inputSequence= [ones(size(inputSequence,1),1) inputSequence_exoge  inputSequence];
 
 count=1;
 count2=1;

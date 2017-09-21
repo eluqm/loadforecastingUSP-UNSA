@@ -1,4 +1,18 @@
+%% ESN network with 'exogenus' word in its name, mean:
+%% exogenus2 = SST variable
+%% exogenus  = ASST variable
+%% and sufix '80' mean:
+%% 80 percent of training data in contrast to 60 percent used in MOPEX data set
+
 clear all;
+%% name of basin
+Basin_name='agblanca';
+
+%% ESN type
+ESN_type=['leaky','plain'];
+
+%% STD
+
 %% number of repetitons
 num_rep=10;
 
@@ -24,6 +38,7 @@ inputs=xlsread('source/Datos_Pruebas.xls');
 %inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=load('source/03179000bluestoneM.dly.txt');
 %inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
+inputs_exo=load('source/ersst4.indices.txt');
 
 %% Set trained ESN network 
 %ESN03054500TygartMonthD_leaky_ramdom_ridge
@@ -35,14 +50,14 @@ inputs=xlsread('source/Datos_Pruebas.xls');
         %net_ESN=load_esn('ESN03364000EastForkWhiteMonthD');
         %net_ESN=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
         %net_ESN=load_esn('ESN01541500_plain_STD_nonRIDGE_rand5');
-        net_ESN=load_esn('Panie_plain_nonSTD_nonRIDGE_rand5');
+        net_ESN=load_esn(strcat(Basin_name,'_Exogenus2_leaky_STD_RIDGE_rand5_80'));
         %net_ESN=load_esn('ESN03179000bluestone_leaky_ridge_standard');
         %net_ESN=load_esn('ESN03179000bluestoneD_leaky_ramdom_ridge');
 
 
 %% select hidrological variable
-input=inputs(:,4);
-
+input=inputs(:,10);
+input_exoge=inputs_exo(:,9);
 %% 
 %fprintf('skewness coefic no-log %f \n',skewness(input))
 
@@ -51,16 +66,17 @@ years=1;
 
 %% Split data from horizon prediction
 [input,test]=splitData(input,years);
-
+[input_exoge,test_exoge]=splitData(input_exoge,years);
         %% A transformation is required if a time series is not normally distributed
         % It aims to remove the seasonality from the mean and the variance,
         % if skewness coefficients are biased. Therefore, a transformation to reduce this skewness closer to zero was needed.
         % The skewness of the observed data is reduced using log-transformation
         [inputstand,xlog1]=translog(input);
-        
-        %% input for T. Fiering model and PEN
+        [inputstand_exoge,xlog1_exoge]=translog(input_exoge);
+        %% input for T. Fiering model and PEN and index_SST
         T_1_TF=inputstand(size(inputstand,1),:);
         T_1_NN=T_1_TF;
+        
         %% set hidden layers for PEN
         hidden_layers=[9];
         
@@ -69,14 +85,19 @@ years=1;
         % The function mapminmax scales inputs and targets so that they fall in the range [–1,1]. 
         %[scaledinput,PS]=mapminmax(input');
         [scaledinput,PS]=mapminmax(inputstand');
-        [inputSequence,outputSequence]=normNN(scaledinput',1);          %short time delay memory = 2 , without bias
+        %% index value
+        [scaledinput_exoge,PS_exoge]=mapminmax(input_exoge');
+        
+        [inputSequence,outputSequence]=normNN(scaledinput',1);
+        [inputSequence_exoge,outputSequence_exoge]=normNN(scaledinput_exoge',1);%short time delay memory = 2 , without bias
         [inputSecuenceNN,outputSecuenceNN]=normNN(scaledinput',2);      %time delay of 2 steps to feedfordward neural network 
+       inputSequence_exo=[ones(size(inputSequence,1),1) inputSequence_exoge inputSequence];
         inputSequence= [ones(size(inputSequence,1),1) inputSequence];   %input for ESN with bias = 1
-     
+        
         %% initial nForgetPoints time points ( can be disregarded)
         nForgetPoints = 24 ;
         initSequence=inputSequence(size(inputSequence,1)-(nForgetPoints-1):end,:);
-        
+        initSequence_exoge=inputSequence_exo(size(inputSequence,1)-(nForgetPoints-1):end,:);
         %% init and train NN 
         [ff_Net,perfNN]=penNN(inputSequence,outputSequence,hidden_layers);
         %T_1_NN=translogone(input,T_1_NN,12);
@@ -122,6 +143,10 @@ years=1;
        ser=1;
       %% generating syntetics series   
       while ser <= numofseries
+          
+          %% Exogenus initialit...
+          T_1_EXO=inputstand_exoge(size(inputstand_exoge,1),:);
+          
           %% Set initialitation
           T_1_TF=inputstand(size(inputstand,1),:);
           T_1_NN=T_1_TF;
@@ -131,7 +156,7 @@ years=1;
           
           %% For ESN model, computing the nforget initial states
           for i=1:nForgetPoints
-           in=initSequence(i,:);
+           in=initSequence_exoge(i,:);
            [out,stateCollectMat,totalstate]=compute_statematrix_nserie(stateCollectMat,totalstate,in,[], net_ESN, nForgetPoints,i);
           end
 
@@ -148,6 +173,11 @@ years=1;
                     %% Random Component   
                     Rvt=tomasandfiering(-1,input,mi);
                     
+                    %% Random index Component and TF 
+                    Ivt= tomasandfiering(-1,input_exoge,mi);
+                    Itf=Thomas_and_FIering_method(Ivt,input_exoge,mi,T_1_EXO);
+                    T_1_EXO=Itf;
+                    Ivtf=detranslogone(inputstand_exoge,xlog1_exoge,input_exoge,Itf,m);
                     %% getting value using T.Fiering model
                     Ytf=Thomas_and_FIering_method(Rvt ,input,mi,T_1_TF);
                     T_1_TF=Ytf;
@@ -176,6 +206,7 @@ years=1;
                     
                     %% reverse of LOG transformation
                     Rvtn=detranslogone(inputstand,xlog1,input,Rvt,m);
+                    
                     Yvtf=detranslogone(inputstand,xlog1,input,Ytf,m);
                     %% RvtnNorm=mapminmax('apply',Rvtn,PS);
                     %% Rvtn + ESN_output
@@ -183,27 +214,27 @@ years=1;
                         out=getOutESN(totalstate(1:size(totalstate)-1,1)',net_ESN,PS);
                         outrev=mapminmax('reverse',out,PS);
                         %% inminmax=mapminmax('apply',outrev+Rvt,PS);
-                        inminmax=detranslogone(inputstand,xlog1,input,Rvt+outrev,m);
+                        inminmax=detranslogone(inputstand,xlog1,input,Rvt*outrev,m);
                         inminmax=translogone(input,abs(inminmax),m);
                         inminmax=mapminmax('apply',inminmax,PS);
-                        in=[1 inminmax];  
+                        %% add mapminmax for exogenus variable
+                        Ivtminmax=mapminmax('apply',Ivtf,PS_exoge);
+                        in=[1 Ivtminmax inminmax];  
                        % totalstate = [internalState; in;out]
                    %    out=getOutESN(totalstate(1:size(totalstate)-1,1)',net_ESN,PS);
                    %    outrev=mapminmax('reverse',out,PS);
                    %    in=[1 mapminmax('apply',(Rvtn+outrev)/2,PS)];
                     else
-                   % out=getOutESN(stateCollectMat(count,:),net_ESN,PS);
-                  %  outrev=mapminmax('reverse',out,PS);
-                  %  in=[1 mapminmax('apply',(Rvtn+outrev)/2,PS)];
-                  
-                       % in=[1 RvtnNorm+out];  
+                    
                         out=getOutESN(totalstate(1:size(totalstate)-1,1)',net_ESN,PS);
                         outrev=mapminmax('reverse',out,PS);
-                        inminmax=detranslogone(inputstand,xlog1,input,Rvt+outrev,m);
-                        %inminmax_2=detranslogone(inputstand,xlog1,input,outrev,m);
+                        inminmax=detranslogone(inputstand,xlog1,input,Rvt*outrev,m);
+                        
                         inminmax=translogone(input,abs(inminmax),m);
                         inminmax=mapminmax('apply',inminmax,PS);
-                        in=[1 inminmax];  
+                        %% add mapminmax for exogenus variable
+                        Ivtminmax=mapminmax('apply',Ivtf,PS_exoge);
+                        in=[1 Ivtminmax inminmax]; 
                         %% inminmax=mapminmax('apply',outrev+Rvtn,PS);
                         %% in=[1 inminmax];  
                        % in=[1 RvtnNorm+out];
@@ -323,16 +354,16 @@ years=1;
         fprintf('iteration n: %s\n',num2str(ij));
  end      
       %% SAVE NRMSE for plot
-      csvwrite(strcat('panie_T_Fiering_random_',num2str(years)),Best_to_plot1);
-      csvwrite(strcat('panie_T_Fiering_model_',num2str(years)),Best_to_plot2);
-      csvwrite(strcat('panie_ESN_',num2str(years)),Best_to_plot3);
-      csvwrite(strcat('panie_PEN_',num2str(years)),Best_to_plot4);
-      csvwrite(strcat('panie_ANFIS_',num2str(years)),Best_to_plot5);
+      csvwrite(strcat(Basin_name,'_T_FieringSTD_random_proTF_80exo_',num2str(years)),Best_to_plot1);
+      csvwrite(strcat(Basin_name,'_T_FieringST_model_proTF_80exo_',num2str(years)),Best_to_plot2);
+      csvwrite(strcat(Basin_name,'_ESNSTD_proTF_80exo_',num2str(years)),Best_to_plot3);
+      csvwrite(strcat(Basin_name,'_PENSTD_proTF_80exo_',num2str(years)),Best_to_plot4);
+      csvwrite(strcat(Basin_name,'_ANFISSTD_proTF_80exo_',num2str(years)),Best_to_plot5);
       
       final_results=[];
       %% SAVE MEDIAS 
       for jj=1:5
         final_results{jj,1}=[mean(RMSE(jj,:)) mean(MSE(jj,:)) mean(MAD(jj,:)) mean(NRMSE(jj,:)) mean(MPE(jj,:)) mean(NSE(jj,:))];
       end
-      csvwrite(strcat('panie_final_result_',num2str(years)),final_results);
+      csvwrite(strcat(Basin_name,'_final_resultSTD_proTF_80exo_',num2str(years)),final_results);
       
