@@ -43,7 +43,7 @@ inputs=xlsread('source/Datos_Pruebas.xls');
         %net_ESN=load_esn('ESN03364000EastForkWhiteMonthD');
         %net_ESN=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
         %net_ESN=load_esn('ESN01541500_plain_STD_nonRIDGE_rand5');
-        net_ESN=load_esn(strcat(Basin_name,'_leaky_STD_RIDGE_rand5'));
+        net_ESN=load_esn(strcat(Basin_name,'_leaky_nonSTD_RIDGE_rand5_80'));
         %net_ESN=load_esn('ESN03179000bluestone_leaky_ridge_standard');
         %net_ESN=load_esn('ESN03179000bluestoneD_leaky_ramdom_ridge');
 
@@ -331,16 +331,16 @@ years=1;
         fprintf('iteration n: %s\n',num2str(ij));
  end      
       %% SAVE NRMSE for plot
-      csvwrite(strcat(Basin_name,'_T_Fiering_randomSTD_sum_',num2str(years)),Best_to_plot1);
-      csvwrite(strcat(Basin_name,'_T_Fiering_modelSTD_sum_',num2str(years)),Best_to_plot2);
-      csvwrite(strcat(Basin_name,'_ESNSTD_sum_',num2str(years)),Best_to_plot3);
-      csvwrite(strcat(Basin_name,'_PENSTD_sum_',num2str(years)),Best_to_plot4);
-      csvwrite(strcat(Basin_name,'_ANFISSTD_sum_',num2str(years)),Best_to_plot5);
+      csvwrite(strcat(Basin_name,'_T_Fiering_random_sum_80_last_',num2str(years)),Best_to_plot1);
+      csvwrite(strcat(Basin_name,'_T_Fiering_model_sum_80_last_',num2str(years)),Best_to_plot2);
+      csvwrite(strcat(Basin_name,'_ESN_sum_80_last_',num2str(years)),Best_to_plot3);
+      csvwrite(strcat(Basin_name,'_PEN_sum_80_last_',num2str(years)),Best_to_plot4);
+      csvwrite(strcat(Basin_name,'_ANFIS_sum_80_last_',num2str(years)),Best_to_plot5);
       
       final_results=[];
       %% SAVE MEDIAS 
       for jj=1:5
         final_results{jj,1}=[mean(RMSE(jj,:)) mean(MSE(jj,:)) mean(MAD(jj,:)) mean(NRMSE(jj,:)) mean(MPE(jj,:)) mean(NSE(jj,:))];
       end
-      csvwrite(strcat(Basin_name,'_final_resultSTD_sum_',num2str(years)),final_results);
+      csvwrite(strcat(Basin_name,'_final_result_sum_80_last_',num2str(years)),final_results);
       

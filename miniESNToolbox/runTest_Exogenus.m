@@ -13,13 +13,13 @@ inputs_exo=load('source/ersst4.indices.txt');
 
 property=10;
 input=inputs(:,property);
-input_exoge=inputs_exo(:,9);
+input_exoge=inputs_exo(:,10);
 
 configurationvalue=100000;
 configuration=[];
 bestNet=struct;
 year=2;
-standar_status=1; % 0 or 1 whether data input is no-standardized or standardized 
+standar_status=0; % 0 or 1 whether data input is no-standardized or standardized 
 
 %% max values of spectral radious and reservoir size
 reservoirNumber=70; %max value

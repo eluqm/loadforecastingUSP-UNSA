@@ -19,12 +19,13 @@ Best_to_plot4=[];
 Best_to_plot5=[];
 
 %% set time series
-inputs=xlsread('source/Datos_Pruebas.xls');
+%inputs=xlsread('source/Datos_Pruebas.xls');
+%inputs=csvread('BarcelonaAeropuertomonth_ts.csv');
 %inputs=load('source/03054500TygartMonthly.dly.txt');
-%inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
+inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=load('source/03179000bluestoneM.dly.txt');
+%inputs=load('source/11413000monthly.dly.txt');
 %inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
-
 %% Set trained ESN network 
 %ESN03054500TygartMonthD_leaky_ramdom_ridge
         %net_ESN=load_esn('ESN03054500TygartMonthD_leaky_ramdom_ridge');
@@ -35,19 +36,20 @@ inputs=xlsread('source/Datos_Pruebas.xls');
         %net_ESN=load_esn('ESN03364000EastForkWhiteMonthD');
         %net_ESN=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
         %net_ESN=load_esn('ESN01541500_plain_STD_nonRIDGE_rand5');
-        net_ESN=load_esn('Panie_plain_nonSTD_nonRIDGE_rand5');
+        %net_ESN=load_esn('Panie_plain_nonSTD_nonRIDGE_rand5');
+        net_ESN=load_esn('ESN03364000_leaky_STD_RIDGE_rand5_80');
         %net_ESN=load_esn('ESN03179000bluestone_leaky_ridge_standard');
         %net_ESN=load_esn('ESN03179000bluestoneD_leaky_ramdom_ridge');
 
 
 %% select hidrological variable
-input=inputs(:,4);
+input=inputs(:,3);
 
 %% 
 %fprintf('skewness coefic no-log %f \n',skewness(input))
 
 %% set the horizon of prediction
-years=1; 
+years=4; 
 
 %% Split data from horizon prediction
 [input,test]=splitData(input,years);
@@ -57,7 +59,7 @@ years=1;
         % if skewness coefficients are biased. Therefore, a transformation to reduce this skewness closer to zero was needed.
         % The skewness of the observed data is reduced using log-transformation
         [inputstand,xlog1]=translog(input);
-        
+%       fprintf('skewness coefic no-log %f \n',skewness(inputstand)) 
         %% input for T. Fiering model and PEN
         T_1_TF=inputstand(size(inputstand,1),:);
         T_1_NN=T_1_TF;
@@ -323,16 +325,16 @@ years=1;
         fprintf('iteration n: %s\n',num2str(ij));
  end      
       %% SAVE NRMSE for plot
-      csvwrite(strcat('panie_T_Fiering_random_',num2str(years)),Best_to_plot1);
-      csvwrite(strcat('panie_T_Fiering_model_',num2str(years)),Best_to_plot2);
-      csvwrite(strcat('panie_ESN_',num2str(years)),Best_to_plot3);
-      csvwrite(strcat('panie_PEN_',num2str(years)),Best_to_plot4);
-      csvwrite(strcat('panie_ANFIS_',num2str(years)),Best_to_plot5);
+      csvwrite(strcat('03364000_T_Fiering_randomSTD_sum_80_',num2str(years)),Best_to_plot1);
+      csvwrite(strcat('03364000_T_Fiering_modelSTD_sum_80_',num2str(years)),Best_to_plot2);
+      csvwrite(strcat('03364000_ESNSTD_sum_80_',num2str(years)),Best_to_plot3);
+      csvwrite(strcat('03364000_PENSTD_sum_80_',num2str(years)),Best_to_plot4);
+      csvwrite(strcat('03364000_ANFISSTD_sum_80_',num2str(years)),Best_to_plot5);
       
       final_results=[];
       %% SAVE MEDIAS 
       for jj=1:5
         final_results{jj,1}=[mean(RMSE(jj,:)) mean(MSE(jj,:)) mean(MAD(jj,:)) mean(NRMSE(jj,:)) mean(MPE(jj,:)) mean(NSE(jj,:))];
       end
-      csvwrite(strcat('panie_final_result_',num2str(years)),final_results);
+      csvwrite(strcat('03364000_final_resultSTD_sum_80_',num2str(years)),final_results);
       

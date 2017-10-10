@@ -1,12 +1,13 @@
 clear all; 
 %inputs=load('source/03054500TygartMonthly.dly.txt');
-inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
+%inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
+inputs=load('source/11413000monthly.dly.txt');
 %inputs=load('source/03179000bluestoneM.dly.txt');
 %inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=xlsread('source/Datos_Pruebas.xls');
-input=inputs(:,3);
-data=inputs(:,3); %historical data
-years=4;
+input=inputs(:,1);
+data=inputs(:,1); %historical data
+years=2;
 [inputstandstart,xlog1start]=translog(input);
 [input,test]=splitData(input,years);
 %[less,teststandard]=splitData(inputstandstart,years);
@@ -112,7 +113,8 @@ MATGEN=0;
 %ESN03054500TygartMonthD_leaky_ramdom_ridge
         %net_ESN=load_esn('ESN03054500TygartMonthD_leaky_ramdom_ridge');
         %net=load_esn('ESN03054500TygartMonthD');
-        net=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
+        %net=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
+        net=load_esn('ESN11413000monthly');
        %net=load_esn('ESN03179000bluestoneD_leaky_ramdom_ridge');
 %net=load_esn('ESN3179000monthlyD');
  numofseries=20;
@@ -189,15 +191,15 @@ MATGEN=0;
 %          %  t_n=t_nn;
 %            % datainputstart=mapminmax('apply',inputm1,PS);
  end
-          [rmse,mse]=plotPEN(MATGEN2,test,'Tomas and Fiering');
-          [rmse,mse]=plotPEN(MATGEN_THOMAS,test,'Tomas and Fiering Methods');
+          [rmse,mse]=plotPEN(MATGEN2,test,'Tomas and Fiering',1);
+          [rmse,mse]=plotPEN(MATGEN_THOMAS,test,'Tomas and Fiering Methods',1);
           MATGEN4=[];
           MATGEN5=[];
             for n=1:years
                 MATGEN4(:,:,n)=MATGEN3((n-1)*12+1:12*n,:);
                 MATGEN5=[MATGEN5 ; MATGEN2(:,:,n)];
             end
-            [rmse,mse]=plotPEN(MATGEN4,test,'ESN');
+            [rmse,mse]=plotPEN(MATGEN4,test,'ESN',1);
          % figure(10)      
         %    plot(MATGEN3)
         %    hleg2= legend('tomasfiering');

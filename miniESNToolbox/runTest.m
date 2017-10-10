@@ -1,24 +1,25 @@
 %% Brute Force script that searches the best configuration of ESN architecture 
 clear all;
 seed=rng;
-inputs=xlsread('source/Datos_Pruebas.xls');
-
+%inputs=xlsread('source/Datos_Pruebas.xls');
+%inputs=csvread('BarcelonaAeropuertomonth_ts.csv');
 %inputs=load('source/03054500TygartMonthly.dly.txt');
-%inputs=load('source/03179000bluestoneM.dly.txt');
+inputs=load('source/03179000bluestoneM.dly.txt');
 %inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
+%inputs=load('source/11413000monthly.dly.txt');
 % case : Mopex hydrologic data :1 +> mean areal precipitation (mm) 
 % case : Mopex hydrologic data :2 +> climatic potential evaporation (mm)
 % case : Mopex hydrologic data :3 +> daily streamflow discharge (mm)
 
-property=10;
+property=3;
 input=inputs(:,property);
 
 configurationvalue=100000;
 configuration=[];
 bestNet=struct;
 year=2;
-standar_status=0; % 0 or 1 whether data input is no-standardized or standardized 
+standar_status=1; % 0 or 1 whether data input is no-standardized or standardized 
 
 %% max values of spectral radious and reservoir size
 reservoirNumber=70; %max value
