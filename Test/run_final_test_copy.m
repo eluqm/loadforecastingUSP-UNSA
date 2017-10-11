@@ -23,11 +23,9 @@ Best_to_plot5=[];
 %inputs=csvread('BarcelonaAeropuertomonth_ts.csv');
 %inputs=load('source/03054500TygartMonthly.dly.txt');
 %inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
-%inputs=load('source/03179000bluestoneM.dly.txt');
+inputs=load('source/03179000bluestoneM.dly.txt');
 %inputs=load('source/11413000monthly.dly.txt');
 %inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
-%inputs=load('source/01541000Month.dly.txt');
-inputs=load('source/12413000Month.dly.txt');
 %% Set trained ESN network 
 %ESN03054500TygartMonthD_leaky_ramdom_ridge
         %net_ESN=load_esn('ESN03054500TygartMonthD_leaky_ramdom_ridge');
@@ -39,7 +37,7 @@ inputs=load('source/12413000Month.dly.txt');
         %net_ESN=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
         %net_ESN=load_esn('ESN01541500_plain_STD_nonRIDGE_rand5');
         %net_ESN=load_esn('Panie_plain_nonSTD_nonRIDGE_rand5');
-        net_ESN=load_esn('ESN12413000_leaky_STD_RIDGE_rand5_80');
+        net_ESN=load_esn('ESN03179000_leaky_STD_RIDGE_rand5_80');
         %net_ESN=load_esn('ESN03179000bluestone_leaky_ridge_standard');
         %net_ESN=load_esn('ESN03179000bluestoneD_leaky_ramdom_ridge');
 
@@ -51,7 +49,7 @@ input=inputs(:,3);
 %fprintf('skewness coefic no-log %f \n',skewness(input))
 
 %% set the horizon of prediction
-years=3; 
+years=2; 
 
 %% Split data from horizon prediction
 [input,test]=splitData(input,years);
@@ -93,7 +91,7 @@ years=3;
         
         %% Set the number of sintetic time series
         %numofseries=100;
-        numofseries=5;
+        numofseries=100;
         %% utils vars
         count=1;
         MATGEN3=[];
@@ -327,16 +325,16 @@ years=3;
         fprintf('iteration n: %s\n',num2str(ij));
  end      
       %% SAVE NRMSE for plot
-      csvwrite(strcat('12413000_T_Fiering_randomSTD_sum_80_',num2str(years)),Best_to_plot1);
-      csvwrite(strcat('12413000_T_Fiering_modelSTD_sum_80_',num2str(years)),Best_to_plot2);
-      csvwrite(strcat('12413000_ESNSTD_sum_80_',num2str(years)),Best_to_plot3);
-      csvwrite(strcat('12413000_PENSTD_sum_80_',num2str(years)),Best_to_plot4);
-      csvwrite(strcat('12413000_ANFISSTD_sum_80_',num2str(years)),Best_to_plot5);
+      csvwrite(strcat('03179000_T_Fiering_randomSTD_sum_80_',num2str(years)),Best_to_plot1);
+      csvwrite(strcat('03179000_T_Fiering_modelSTD_sum_80_',num2str(years)),Best_to_plot2);
+      csvwrite(strcat('03179000_ESNSTD_sum_80_',num2str(years)),Best_to_plot3);
+      csvwrite(strcat('03179000_PENSTD_sum_80_',num2str(years)),Best_to_plot4);
+      csvwrite(strcat('03179000_ANFISSTD_sum_80_',num2str(years)),Best_to_plot5);
       
       final_results=[];
       %% SAVE MEDIAS 
       for jj=1:5
         final_results{jj,1}=[mean(RMSE(jj,:)) mean(MSE(jj,:)) mean(MAD(jj,:)) mean(NRMSE(jj,:)) mean(MPE(jj,:)) mean(NSE(jj,:))];
       end
-      csvwrite(strcat('12413000_final_resultSTD_sum_80_',num2str(years)),final_results);
+      csvwrite(strcat('03179000_final_resultSTD_sum_80_',num2str(years)),final_results);
       
