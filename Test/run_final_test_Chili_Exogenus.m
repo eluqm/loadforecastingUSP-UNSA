@@ -6,7 +6,7 @@
 
 clear all;
 %% name of basin
-Basin_name='frayle';
+Basin_name='agblanca';
 
 %% ESN type
 ESN_type=['leaky','plain'];
@@ -14,7 +14,7 @@ ESN_type=['leaky','plain'];
 %% STD
 
 %% number of repetitons
-num_rep=10;
+num_rep=1;
 
 %% indicators 
 NRMSE = [];
@@ -50,19 +50,19 @@ inputs_exo=load('source/ersst4.indices.txt');
         %net_ESN=load_esn('ESN03364000EastForkWhiteMonthD');
         %net_ESN=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
         %net_ESN=load_esn('ESN01541500_plain_STD_nonRIDGE_rand5');
-        net_ESN=load_esn(strcat(Basin_name,'_Exogenus2_leaky_nonSTD_RIDGE_rand5_80'));
+        net_ESN=load_esn(strcat(Basin_name,'_Exogenus2_leaky_STD_RIDGE_rand5_80_nonScaling_1'));
         %net_ESN=load_esn('ESN03179000bluestone_leaky_ridge_standard');
         %net_ESN=load_esn('ESN03179000bluestoneD_leaky_ramdom_ridge');
 
 
 %% select hidrological variable
-input=inputs(:,7);
+input=inputs(:,10);
 input_exoge=inputs_exo(:,9);
 %% 
 %fprintf('skewness coefic no-log %f \n',skewness(input))
 
 %% set the horizon of prediction
-years=3; 
+years=2; 
 
 %% Split data from horizon prediction
 [input,test]=splitData(input,years);
@@ -110,7 +110,7 @@ years=3;
         
         %% Set the number of sintetic time series
         %numofseries=100;
-        numofseries=5;
+        numofseries=50;
         %% utils vars
         count=1;
         MATGEN3=[];
@@ -354,16 +354,16 @@ years=3;
         fprintf('iteration n: %s\n',num2str(ij));
  end      
       %% SAVE NRMSE for plot
-      csvwrite(strcat(Basin_name,'_T_Fiering_random_sumTF_80exo_',num2str(years)),Best_to_plot1);
-      csvwrite(strcat(Basin_name,'_T_Fiering_model_sumTF_80exo_',num2str(years)),Best_to_plot2);
-      csvwrite(strcat(Basin_name,'_ESN_sumTF_80exo_',num2str(years)),Best_to_plot3);
-      csvwrite(strcat(Basin_name,'_PEN_sumTF_80exo_',num2str(years)),Best_to_plot4);
-      csvwrite(strcat(Basin_name,'_ANFIS_sumTF_80exo_',num2str(years)),Best_to_plot5);
+      csvwrite(strcat(Basin_name,'_T_Fiering_random_sumTF_80exo_sc1',num2str(years)),Best_to_plot1);
+      csvwrite(strcat(Basin_name,'_T_Fiering_model_sumTF_80exo_sc1',num2str(years)),Best_to_plot2);
+      csvwrite(strcat(Basin_name,'_ESN_sumTF_80exo_sc1',num2str(years)),Best_to_plot3);
+      csvwrite(strcat(Basin_name,'_PEN_sumTF_80exo_sc1',num2str(years)),Best_to_plot4);
+      csvwrite(strcat(Basin_name,'_ANFIS_sumTF_80exo_sc1',num2str(years)),Best_to_plot5);
       
       final_results=[];
       %% SAVE MEDIAS 
       for jj=1:5
         final_results{jj,1}=[mean(RMSE(jj,:)) mean(MSE(jj,:)) mean(MAD(jj,:)) mean(NRMSE(jj,:)) mean(MPE(jj,:)) mean(NSE(jj,:))];
       end
-      csvwrite(strcat(Basin_name,'_final_result_sumTF_80exo_',num2str(years)),final_results);
+      csvwrite(strcat(Basin_name,'_final_result_sumTF_80exo_sc1',num2str(years)),final_results);
       

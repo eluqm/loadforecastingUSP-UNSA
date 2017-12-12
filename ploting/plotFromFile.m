@@ -10,6 +10,7 @@ basic_MATGEN=load(namefile);
 siz=size(basic_MATGEN,2)
 
 years=str2num(namefile(end:end));
+years
 sizeSeries=siz/years;
 
 [input,test]=splitData(input,years);

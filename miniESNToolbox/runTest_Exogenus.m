@@ -19,7 +19,7 @@ configurationvalue=100000;
 configuration=[];
 bestNet=struct;
 year=2;
-standar_status=0; % 0 or 1 whether data input is no-standardized or standardized 
+standar_status=1; % 0 or 1 whether data input is no-standardized or standardized 
 
 %% max values of spectral radious and reservoir size
 reservoirNumber=70; %max value

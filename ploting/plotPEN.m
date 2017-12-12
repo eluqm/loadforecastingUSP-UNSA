@@ -5,7 +5,7 @@
 function  [RMSE,MSE,ErrorMAD,ErrorNRMSE,ErrorMPE,NSE]=plotPEN(MATGEN,test,name,display_plots)
 
   warning('off');       
-         
+        
         % what is the maximun value of first year
         %  for mes=1:12      
         %    maxtotal=[]
@@ -52,64 +52,43 @@ function  [RMSE,MSE,ErrorMAD,ErrorNRMSE,ErrorMPE,NSE]=plotPEN(MATGEN,test,name,d
                 h1{i+1}=plot(x,plotData2','.',xq1,inter);
                 set(h1{i+1}       , ...
                 'Color'           , [0.5 0.5 0.5]     , ...        
-                'LineWidth'       , 0.8);
+                'LineWidth'       , 1.0);
                  plotData2=[];
                 i=i+1;
-           end
-           %legendInfo{1}=['Escenarios']
-         
-           
+           end           
            %% adding
            if size(test,1)>0   
-            p = pchip(x,test,xq1);
+                p = pchip(x,test,xq1);
             
-            %% h2=plot(x,test,xq1,p,'-bd','LineWidth',1); %plotear 
-            h1{i}=plot(x,test,'db',xq1,p,'-b','LineWidth',2,'markers',4); 
+                %% h2=plot(x,test,xq1,p,'-bd','LineWidth',1); %plotear 
+                h1{i}=plot(x,test,'db',xq1,p,'-b','LineWidth',2,'markers',4); 
+                
+                %% set legend and ploting sintetics and real time series
+                h_cero(1)=  plot(0,0,'.-','visible','off','Color',[0.5 0.5 0.5],'LineWidth',1.5);
+                h_cero(2) = plot(0,0,'-db','visible', 'off','LineWidth',3,'markers',4);
+                hLegend =legend(h_cero,'Escenarios','Observación','Location','NorthEast');
+                bestPlotTS(gca,'series temporales hidrólogicas','Meses','Caudal',hLegend)
+                hold off;
             
-            %% set legend for sintetics and real time series
-            h_cero(1)=  plot(0,0,'.-','visible','off','Color',[0.5 0.5 0.5],'LineWidth',1.2);
-            h_cero(2) = plot(0,0,'-db','visible', 'off','LineWidth',2,'markers',4);
-            hLegend =legend(h_cero,'Escenarios','Observación','Location','NorthEast');
-            
-            %% Customise plot labels, titles fonts, etc
-            hTitle  = title ({'series temporales hidrólogicas'});
-            hXLabel = xlabel('Meses'              );
-            hYLabel = ylabel('Caudal'     );
-            set( gca                       , ...
-                 'FontName'   , 'Helvetica' );
-            set([hTitle, hXLabel, hYLabel], ...
-                 'FontName'   , 'Latin Modern Roman');
-            set([hLegend, gca]             , ...
-                 'FontSize'   , 8           );
-            set([hXLabel, hYLabel]  , ...
-                'FontSize'   , 10          , ...
-                'FontWeight' , 'bold'      );
-            set( hTitle                    , ...
-                'FontSize'   , 12          , ...
-                'FontWeight' , 'bold'      );
-            set(gca, ...
-  'Box'         , 'off'     , ...
-  'TickDir'     , 'out'     , ...
-  'TickLength'  , [.02 .02] , ...
-  'XMinorTick'  , 'on'      , ...
-  'YMinorTick'  , 'on'      , ...
-  'YGrid'       , 'on'      , ...
-  'XColor'      , [.3 .3 .3], ...
-  'YColor'      , [.3 .3 .3], ...
-  'LineWidth'   , 1         );
-            hold off;
-            
-            %% Plot sintetic mean vs  real time series
-            q1 = pchip(x,fxi,xq1);
-            q2 = pchip(x,test,xq1);
-            figure('Name',strcat(name,'respect medias'));
-            plot(x,fxi,'or',xq1,q1,'-r');
-            hold on;
-            plot(x,test,'bd',xq1,q2,'-b');
-            hleg2= legend('mean of syntetics series','actual serie');
-            %strValues = strtrim(cellstr(num2str(fxi(:),'(%0.3f)')));
-            %text(1:size(fxi),fxi(:),strValues,'VerticalAlignment','bottom');
-            %plot(x,test,'o',xq1,p,'-');
+                %% Ploting sintetic mean vs  real time series
+                q1 = pchip(x,fxi,xq1);
+                q2 = pchip(x,test,xq1);
+                figure('Name',strcat(name,'respect medias'));
+                medianPLOT=plot(x,fxi,'.',xq1,q1);
+                set(medianPLOT       , ...
+                'Color'           , [0.5 0.5 0.5]     , ...        
+                'LineWidth'       , 1.5               , ...
+                'MarkerSize'     , 18); 
+                hold on;
+                test_TS=plot(x,test,'bd',xq1,q2,'-b','markers',4);
+                set(test_TS       , ...
+                'Color'           , [0.0 0.0 1]     , ...        
+                'LineWidth'       , 2.0);
+                %%'-db','visible', 'off','LineWidth',3,'markers',4);
+                hleg2= legend('mean of syntetics series','actual serie');
+                bestPlotTS(gca,'series temporales hidrólogicas','Meses','Caudal',hleg2)
+                hold off;
+                
            end
 end   
         %% compute NRMSE training error

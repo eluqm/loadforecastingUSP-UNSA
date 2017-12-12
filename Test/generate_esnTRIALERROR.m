@@ -1,16 +1,19 @@
 function[trainedEsn,testError]=generate_esnTRIALERROR(inputSequence,outputSequence,nInputUnits,nInternalUnits,nOutputUnits,spectral_radious)
 
 %%%% generate an esn 
-inputScal(1:nInputUnits,1:1)=0.1;
+%original
+%inputScal(1:nInputUnits,1:1)=0.1;
+inputScal(1:nInputUnits,1:1)=1;
 % 
 esn = generate_esn(nInputUnits, nInternalUnits, nOutputUnits, ...
     'spectralRadius',spectral_radious, 'inputScaling',inputScal,...
-    'teacherScaling',[0.3],'teacherShift',[-0.2],'feedbackScaling', 0, ...
+    'teacherScaling',[1.0],'teacherShift',[1.0],'feedbackScaling', 0, ...
     'type','leaky_esn','leakage',1,'methodWeightCompute','ridge_regression');
 % 'plain_esn'
 %'leaky_esn','leakage',1
 % methodWeightCompute','ridge_regression'
-
+%% teacherscaling = [0.3]
+%% teacherShift = [-0.2]
 esn.internalWeights = esn.spectralRadius * esn.internalWeights_UnitSR;
 
 
