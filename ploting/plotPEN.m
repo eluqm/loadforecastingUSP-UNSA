@@ -58,21 +58,23 @@ function  [RMSE,MSE,ErrorMAD,ErrorNRMSE,ErrorMPE,NSE]=plotPEN(MATGEN,test,name,d
            end           
            %% adding
            if size(test,1)>0   
+               
+                %% Ploting test
                 p = pchip(x,test,xq1);
-            
-                %% h2=plot(x,test,xq1,p,'-bd','LineWidth',1); %plotear 
                 h1{i}=plot(x,test,'db',xq1,p,'-b','LineWidth',2,'markers',4); 
                 
                 %% set legend and ploting sintetics and real time series
+                % we create invisible plot in order get access to lagends
                 h_cero(1)=  plot(0,0,'.-','visible','off','Color',[0.5 0.5 0.5],'LineWidth',1.5);
                 h_cero(2) = plot(0,0,'-db','visible', 'off','LineWidth',3,'markers',4);
                 hLegend =legend(h_cero,'Escenarios','Observación','Location','NorthEast');
-                bestPlotTS(gca,'series temporales hidrólogicas','Meses','Caudal',hLegend)
+                bestPlotTS(gca,'Series temporales hidrólogicas','Meses','Caudal',hLegend)
                 hold off;
             
                 %% Ploting sintetic mean vs  real time series
                 q1 = pchip(x,fxi,xq1);
                 q2 = pchip(x,test,xq1);
+                
                 figure('Name',strcat(name,'respect medias'));
                 medianPLOT=plot(x,fxi,'.',xq1,q1);
                 set(medianPLOT       , ...
@@ -80,13 +82,19 @@ function  [RMSE,MSE,ErrorMAD,ErrorNRMSE,ErrorMPE,NSE]=plotPEN(MATGEN,test,name,d
                 'LineWidth'       , 1.5               , ...
                 'MarkerSize'     , 18); 
                 hold on;
-                test_TS=plot(x,test,'bd',xq1,q2,'-b','markers',4);
+                
+                test_TS=plot(x,test,'db',xq1,q2,'-b','markers',4);
                 set(test_TS       , ...
                 'Color'           , [0.0 0.0 1]     , ...        
                 'LineWidth'       , 2.0);
-                %%'-db','visible', 'off','LineWidth',3,'markers',4);
-                hleg2= legend('mean of syntetics series','actual serie');
-                bestPlotTS(gca,'series temporales hidrólogicas','Meses','Caudal',hleg2)
+                
+                %addLineTS(test,fxi,test_TS)
+                %% set legend and ploting sintetics and real time series
+                % we create invisible plot in order get access to lagends
+                h_cero1(1)= plot(0,0,'.-','visible','off','Color',[0.5 0.5 0.5],'LineWidth',1.5);
+                h_cero1(2)= plot(0,0,'-db','visible', 'off','LineWidth',3,'markers',4);
+                hleg2= legend(h_cero1,sprintf('Media de \n escenarios'),'Observación');
+                bestPlotTS(gca,'Series temporales Hidrólogicas','Meses','Caudal',hleg2)
                 hold off;
                 
            end

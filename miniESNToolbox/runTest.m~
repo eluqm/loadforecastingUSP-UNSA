@@ -2,27 +2,20 @@
 clear all;
 seed=rng;
 inputs=xlsread('source/Datos_Pruebas.xls');
+%inputs=csvread('BarcelonaAeropuertomonth_ts.csv');
 %inputs=load('source/03054500TygartMonthly.dly.txt');
 %inputs=load('source/03179000bluestoneM.dly.txt');
+%inputs=load('source/01541000Month.dly.txt');
+%inputs=load('source/12413000Month.dly.txt');
 %inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
+%inputs=load('source/11413000monthly.dly.txt');
 % case : Mopex hydrologic data :1 +> mean areal precipitation (mm) 
 % case : Mopex hydrologic data :2 +> climatic potential evaporation (mm)
 % case : Mopex hydrologic data :3 +> daily streamflow discharge (mm)
-property=10;
 
-%% Exogenus data to improve forecasting 
-inputs_exo=load('source/ersst4.indices.txt');
-input_exoge=inputs_exo(:,9); %% SST=9 and ASST=10 exogenus data
-
-%input_exoge=inputs(:,property+1);
-%inputs_exo=load('source/ersst4.indices.txt');
-%inputs=xlsread('source/Datos_Pruebas.xls');
-
-
+property=3;
 input=inputs(:,property);
-
-
 
 configurationvalue=100000;
 configuration=[];
@@ -38,7 +31,7 @@ nForgetPoints = 11 ; %value
 random_times=5;
 
 %% Esn configuration
-nInputUnits = 3; %nInternalUnits = 30; 
+nInputUnits = 2; %nInternalUnits = 30; 
 nOutputUnits = 1; 
 bestFinal=struct('error',00.1,'networkESN',struct);        
 configuration=struct('error',00.1,'net',struct); 
@@ -46,20 +39,15 @@ configuration_color_map=zeros(spectral_radious*10,(reservoirNumber-10)+1);
 configuration_by_sparce=zeros(random_times,1);
 %% neural network based architectures are prepared; 
         [input,test]=splitData(input,year);
-        [input_exoge,test_exoge]=splitData(input_exoge,year);
-        
         scaledinput=[];
         if standar_status>0
             [inputstand,xlog1]=translog(input);
             [scaledinput,PS]=mapminmax(inputstand');
-            [scaledinput_exoge,PS_exoge]=mapminmax(input_exoge');
         else
             [scaledinput,PS]=mapminmax(input');
-            [scaledinput_exoge,PS_exoge]=mapminmax(input_exoge');
         end
         [inputSequence,outputSequence]=normNN(scaledinput',1);
-        [inputSequence_exoge,outputSequence_exoge]=normNN(scaledinput_exoge',1);
-        inputSequence= [ones(size(inputSequence,1),1) inputSequence_exoge  inputSequence];
+        inputSequence= [ones(size(inputSequence,1),1) inputSequence];
 
 count=1;
 count2=1;

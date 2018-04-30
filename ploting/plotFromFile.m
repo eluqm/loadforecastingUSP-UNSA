@@ -7,6 +7,7 @@ function MATGEN4=plotFromFile(namefile,input)
 
 %% load from file to matrix
 basic_MATGEN=load(namefile);
+basic_MATGEN=abs(basic_MATGEN);
 siz=size(basic_MATGEN,2)
 
 years=str2num(namefile(end:end));
@@ -20,6 +21,6 @@ for n=1:years
 end
  
 %% using plot PEN function
-plotPEN(MATGEN4,test,'fromfile',1);
+plotPEN(MATGEN4,test,'fromfile',1)
 
 end

@@ -1,11 +1,11 @@
 %% Brute Force script that searches the best configuration of ESN architecture 
 clear all;
 seed=rng;
-%inputs=xlsread('source/Datos_Pruebas.xls');
+inputs=xlsread('source/Datos_Pruebas.xls');
 %inputs=csvread('BarcelonaAeropuertomonth_ts.csv');
 %inputs=load('source/03054500TygartMonthly.dly.txt');
 %inputs=load('source/03179000bluestoneM.dly.txt');
-inputs=load('source/01541000Month.dly.txt');
+%inputs=load('source/01541000Month.dly.txt');
 %inputs=load('source/12413000Month.dly.txt');
 %inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
@@ -14,7 +14,10 @@ inputs=load('source/01541000Month.dly.txt');
 % case : Mopex hydrologic data :2 +> climatic potential evaporation (mm)
 % case : Mopex hydrologic data :3 +> daily streamflow discharge (mm)
 
-property=3;
+% case : chilli data  property :4 +> caudal panie
+% case : chilli data  property :7 +> caudal fraile
+
+property=10;
 input=inputs(:,property);
 
 configurationvalue=100000;

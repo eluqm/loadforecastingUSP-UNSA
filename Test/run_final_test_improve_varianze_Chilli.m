@@ -1,6 +1,9 @@
 clear all;
 %% name of basin
-Basin_name='Panie';
+Basin_name='Frayle';
+
+%% varianze factor t-test
+var_factor=4.5;
 
 %% ESN type
 ESN_type=['leaky','plain'];
@@ -49,8 +52,8 @@ inputs=xlsread('source/Datos_Pruebas.xls');
 
 
 %% select hidrological variable
-input=inputs(:,4);
-
+input=inputs(:,7);
+[input,test1]=splitData(input,1);
 %% 
 %fprintf('skewness coefic no-log %f \n',skewness(input))
 
@@ -188,13 +191,16 @@ years=3;
                     %% RvtnNorm=mapminmax('apply',Rvtn,PS);
                     %% Rvtn + ESN_output
                     if count < 2
-                        out=getOutESN(totalstate(1:size(totalstate)-1,1)',net_ESN,PS);
-                        outrev=mapminmax('reverse',out,PS);
+                        out=getOutESN2(totalstate(1:size(totalstate)-1,1)',net_ESN,PS,Rvt,var_factor);
+                        inminmax=out;
+                        in=[1 inminmax]; 
+                        %out=getOutESN(totalstate(1:size(totalstate)-1,1)',net_ESN,PS);
+                        %outrev=mapminmax('reverse',out,PS);
                         %% inminmax=mapminmax('apply',outrev+Rvt,PS);
-                        inminmax=detranslogone(inputstand,xlog1,input,Rvt+outrev,m);
-                        inminmax=translogone(input,abs(inminmax),m);
-                        inminmax=mapminmax('apply',inminmax,PS);
-                        in=[1 inminmax];  
+                        %inminmax=detranslogone(inputstand,xlog1,input,Rvt+outrev,m);
+                        %inminmax=translogone(input,abs(inminmax),m);
+                        %inminmax=mapminmax('apply',inminmax,PS);
+                        %in=[1 inminmax];  
                        % totalstate = [internalState; in;out]
                    %    out=getOutESN(totalstate(1:size(totalstate)-1,1)',net_ESN,PS);
                    %    outrev=mapminmax('reverse',out,PS);
@@ -203,15 +209,17 @@ years=3;
                    % out=getOutESN(stateCollectMat(count,:),net_ESN,PS);
                   %  outrev=mapminmax('reverse',out,PS);
                   %  in=[1 mapminmax('apply',(Rvtn+outrev)/2,PS)];
-                  
-                       % in=[1 RvtnNorm+out];  
-                        out=getOutESN(totalstate(1:size(totalstate)-1,1)',net_ESN,PS);
-                        outrev=mapminmax('reverse',out,PS);
-                        inminmax=detranslogone(inputstand,xlog1,input,Rvt+outrev,m);
-                        %inminmax_2=detranslogone(inputstand,xlog1,input,outrev,m);
-                        inminmax=translogone(input,abs(inminmax),m);
-                        inminmax=mapminmax('apply',inminmax,PS);
+                        out=getOutESN2(totalstate(1:size(totalstate)-1,1)',net_ESN,PS,Rvt,var_factor);
+                        inminmax=out;
                         in=[1 inminmax];  
+                        % in=[1 RvtnNorm+out];  
+                        %out=getOutESN(totalstate(1:size(totalstate)-1,1)',net_ESN,PS);
+                        %outrev=mapminmax('reverse',out,PS);
+                        %inminmax=detranslogone(inputstand,xlog1,input,Rvt+outrev,m);
+                        %inminmax_2=detranslogone(inputstand,xlog1,input,outrev,m);
+                        %inminmax=translogone(input,abs(inminmax),m);
+                        %inminmax=mapminmax('apply',inminmax,PS);
+                        %in=[1 inminmax];  
                         %% inminmax=mapminmax('apply',outrev+Rvtn,PS);
                         %% in=[1 inminmax];  
                        % in=[1 RvtnNorm+out];
@@ -332,16 +340,16 @@ years=3;
         fprintf('iteration n: %s\n',num2str(ij));
  end      
       %% SAVE NRMSE for plot
-      csvwrite(strcat(Basin_name,'_T_Fiering_randomSTD_sum_80_nsc75_',num2str(years)),Best_to_plot1);
-      csvwrite(strcat(Basin_name,'_T_Fiering_modelSTD_sum_80_nsc75_',num2str(years)),Best_to_plot2);
-      csvwrite(strcat(Basin_name,'_ESNSTD_sum_80_nsc75_',num2str(years)),Best_to_plot3);
-      csvwrite(strcat(Basin_name,'_PENSTD_sum_80_nsc75_',num2str(years)),Best_to_plot4);
-      csvwrite(strcat(Basin_name,'_ANFISSTD_sum_80_nsc75_',num2str(years)),Best_to_plot5);
+      csvwrite(strcat(Basin_name,'_T_Fiering_randomSTD_sum_80cut_improve_nsc_',num2str(var_factor),'_',num2str(years)),Best_to_plot1);
+      csvwrite(strcat(Basin_name,'_T_Fiering_modelSTD_sum_80cut_improve_nsc_',num2str(var_factor),'_',num2str(years)),Best_to_plot2);
+      csvwrite(strcat(Basin_name,'_ESNSTD_sum_80cut_improve_nsc_',num2str(var_factor),'_',num2str(years)),Best_to_plot3);
+      csvwrite(strcat(Basin_name,'_PENSTD_sum_80cut_improve_nsc_',num2str(var_factor),'_',num2str(years)),Best_to_plot4);
+      csvwrite(strcat(Basin_name,'_ANFISSTD_sum_80cut_improve_nsc_',num2str(var_factor),'_',num2str(years)),Best_to_plot5);
       
       final_results=[];
       %% SAVE MEDIAS 
       for jj=1:5
         final_results{jj,1}=[mean(RMSE(jj,:)) mean(MSE(jj,:)) mean(MAD(jj,:)) mean(NRMSE(jj,:)) mean(MPE(jj,:)) mean(NSE(jj,:))];
       end
-      csvwrite(strcat(Basin_name,'_final_resultSTD_sum_80_nsc75_',num2str(years)),final_results);
-      
+      csvwrite(strcat(Basin_name,'_final_resultSTD_sum_80cut_improve_nsc_',num2str(var_factor),'_',num2str(years)),final_results);
+     

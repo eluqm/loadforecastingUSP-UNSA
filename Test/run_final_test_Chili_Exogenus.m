@@ -1,6 +1,7 @@
 %% ESN network with 'exogenus' word in its name, mean:
 %% exogenus2 = SST variable
 %% exogenus  = ASST variable
+%% exoP      = Precipitation
 %% and sufix '80' mean:
 %% 80 percent of training data in contrast to 60 percent used in MOPEX data set
 
