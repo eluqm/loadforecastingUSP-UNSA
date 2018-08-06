@@ -1,7 +1,7 @@
 %% Brute Force script that searches the best configuration of ESN architecture 
 clear all;
 seed=rng;
-inputs=xlsread('source/Datos_Pruebas.xls');
+%inputs=xlsread('source/Datos_Pruebas.xls');
 %inputs=csvread('BarcelonaAeropuertomonth_ts.csv');
 %inputs=load('source/03054500TygartMonthly.dly.txt');
 %inputs=load('source/03179000bluestoneM.dly.txt');
@@ -9,7 +9,8 @@ inputs=xlsread('source/Datos_Pruebas.xls');
 %inputs=load('source/12413000Month.dly.txt');
 %inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
-%inputs=load('source/11413000monthly.dly.txt');
+inputs=load('source/07378500monthly.dly.txt');
+%inputs=load('source/01668000Month.dly.txt');
 % case : Mopex hydrologic data :1 +> mean areal precipitation (mm) 
 % case : Mopex hydrologic data :2 +> climatic potential evaporation (mm)
 % case : Mopex hydrologic data :3 +> daily streamflow discharge (mm)
@@ -17,7 +18,7 @@ inputs=xlsread('source/Datos_Pruebas.xls');
 % case : chilli data  property :4 +> caudal panie
 % case : chilli data  property :7 +> caudal fraile
 
-property=10;
+property=3;
 input=inputs(:,property);
 
 configurationvalue=100000;
@@ -97,12 +98,13 @@ plot_sequence(testOutputSequence(nForgetPoints+1:end,:), predictedTestOutput, nP
 %save_esn(esn, '11413000monthly.esn');
 
 hold off;
-%figure(5);
+figure(5);
 %% plot colormap of performance
-%surf([10:1:reservoirNumber],[0.1:0.1:spectral_radious],configuration_color_map,'EdgeColor','None','facecolor','interp');
+surf([10:1:reservoirNumber],[0.1:0.1:spectral_radious],configuration_color_map,'EdgeColor','None','facecolor','interp');
 %set(gca,'fontsize',20);
 %colormap(flipud(gray));
-%view(0,90);
+colormap(hot);
+view(0,90);
 %light;
 %lighting phong;
 %set(gcf,'Units','Inches');

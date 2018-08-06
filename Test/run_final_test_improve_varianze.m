@@ -19,7 +19,7 @@ Best_to_plot4=[];
 Best_to_plot5=[];
 
 %% Code Mopex 
-prefix='01541500';
+prefix='01668000';
 
 %% varianze factor t-test
 var_factor=2.5;
@@ -31,10 +31,11 @@ var_factor=2.5;
 %inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=load('source/03179000bluestoneM.dly.txt');
 %inputs=load('source/11413000monthly.dly.txt');
-inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
+%inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
 %inputs=load('source/12413000Month.dly.txt');
 %inputs=load('source/01541000Month.dly.txt');
 %inputs=load('source/12413000Month.dly.txt');
+inputs=load('source/01668000Month.dly.txt');
 %% Set trained ESN network 
 %ESN03054500TygartMonthD_leaky_ramdom_ridge
         %net_ESN=load_esn('ESN03054500TygartMonthD_leaky_ramdom_ridge');
@@ -46,7 +47,7 @@ inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
         %net_ESN=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
         %net_ESN=load_esn('ESN01541500_plain_STD_nonRIDGE_rand5');
         %net_ESN=load_esn('Panie_plain_nonSTD_nonRIDGE_rand5');
-        net_ESN=load_esn('ESN01541500_leaky_STD_RIDGE_rand5_80_nonScaling_1');
+        net_ESN=load_esn('ESN1668000_simple_STD_nonRIDGE_rand5');
         %net_ESN=load_esn('ESN03179000bluestone_leaky_ridge_standard');
         %net_ESN=load_esn('ESN03179000bluestoneD_leaky_ramdom_ridge');
 
