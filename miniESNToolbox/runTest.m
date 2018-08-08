@@ -9,7 +9,7 @@ seed=rng;
 %inputs=load('source/12413000Month.dly.txt');
 %inputs=load('source/03364000EastForkWhiteMonth.dly.txt');
 %inputs=load('source/01541500CLEARFIELDMonth.dly.txt');
-inputs=load('source/07378500monthly.dly.txt');
+inputs=load('source/06191500Month.dly.txt');
 %inputs=load('source/01668000Month.dly.txt');
 % case : Mopex hydrologic data :1 +> mean areal precipitation (mm) 
 % case : Mopex hydrologic data :2 +> climatic potential evaporation (mm)

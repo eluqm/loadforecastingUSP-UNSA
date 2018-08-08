@@ -1,6 +1,6 @@
 clear all;
 %% number of repetitons
-num_rep=10;
+num_rep=2;
 
 %% indicators 
 NRMSE = [];
@@ -19,10 +19,10 @@ Best_to_plot4=[];
 Best_to_plot5=[];
 
 %% Code Mopex 
-prefix='01668000';
+prefix='06191500';
 
 %% varianze factor t-test
-var_factor=2.5;
+var_factor=0.5;
 
 %% set time series
 %inputs=xlsread('source/Datos_Pruebas.xls');
@@ -35,7 +35,7 @@ var_factor=2.5;
 %inputs=load('source/12413000Month.dly.txt');
 %inputs=load('source/01541000Month.dly.txt');
 %inputs=load('source/12413000Month.dly.txt');
-inputs=load('source/01668000Month.dly.txt');
+inputs=load('source/06191500Month.dly.txt');
 %% Set trained ESN network 
 %ESN03054500TygartMonthD_leaky_ramdom_ridge
         %net_ESN=load_esn('ESN03054500TygartMonthD_leaky_ramdom_ridge');
@@ -47,7 +47,7 @@ inputs=load('source/01668000Month.dly.txt');
         %net_ESN=load_esn('ESN03364000EasstD_leaky_ramdom_ridge');
         %net_ESN=load_esn('ESN01541500_plain_STD_nonRIDGE_rand5');
         %net_ESN=load_esn('Panie_plain_nonSTD_nonRIDGE_rand5');
-        net_ESN=load_esn('ESN1668000_simple_STD_nonRIDGE_rand5');
+        net_ESN=load_esn('ESN06191500_plain_STD_nonRIDGE_rand5_80');
         %net_ESN=load_esn('ESN03179000bluestone_leaky_ridge_standard');
         %net_ESN=load_esn('ESN03179000bluestoneD_leaky_ramdom_ridge');
 
@@ -101,7 +101,7 @@ years=3;
         
         %% Set the number of sintetic time series
         %numofseries=100;
-        numofseries=75;
+        numofseries=100;
         %% utils vars
         count=1;
         MATGEN3=[];

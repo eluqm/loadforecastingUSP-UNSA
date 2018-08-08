@@ -8,10 +8,10 @@ inputScal(1:nInputUnits,1:1)=1;
 esn = generate_esn(nInputUnits, nInternalUnits, nOutputUnits, ...
     'spectralRadius',spectral_radious, 'inputScaling',inputScal,...
     'teacherScaling',[1.0],'teacherShift',[1.0],'feedbackScaling', 0, ...
-    'type','plain_esn');
+    'type','plain_esn','methodWeightCompute','ridge_regression');
 % 'plain_esn'
 %'leaky_esn','leakage',1
-% methodWeightCompute','ridge_regression'
+% 'methodWeightCompute','ridge_regression'
 %% teacherscaling = [0.3]
 %% teacherShift = [-0.2]
 esn.internalWeights = esn.spectralRadius * esn.internalWeights_UnitSR;
